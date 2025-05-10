@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title class="page-title" >주문 목록</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* 제목 폰트 크기 조정 */
+        .page-title {
+            font-size: 32px; /* 원하는 크기로 설정 (예: 32px) */
+            font-weight: bold; /* 글자 강조 */
+            color: #333; /* 글자 색상 */
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f1f3f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .container {
+            width: 90%;
+            margin: 20px auto;
+        }
+
+        .phone-cell {
+            color: blue;
+            text-decoration: underline;
+            font-size: 22px;
+            text-align: center;
+        }
+
+        .grid {
+            background-color: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            width: 100%;
+            max-height: 600px;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out;
+            overflow-x: auto;
+        }
+
+        .grid.open {
+            max-height: 1000px;
+            overflow-y: auto;
+        }
+
+        .grid.collapsed {
+            max-height: 160px;
+            overflow: hidden;
+        }
+
+        .grid .grid-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+
+        .grid-header .title {
+            flex-grow: 1;
+            font-size: 32px; /* 원하는 크기로 설정 (예: 32px) */
+            font-weight: bold; /* 글자 강조 */
+            color: #333; /* 글자 색상 */
+        }
+
+        .grid-header .toggle-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .grid-header .toggle-button:hover {
+            background-color: #0056b3;
+        }
+
+        .button-group {
+            display: flex;
+            align-items: center;
+        }
+
+        .search-form {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .search-inputs {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .search-form input {
+            width: 200px;
+            padding: 10px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+        }
+
+        .search-form button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .search-form button:hover {
+            background-color: #0056b3;
+        }
+
+        .deposit-button {
+            background-color: #f0ad4e;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .deposit-button:hover {
+            background-color: #ec971f;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: auto;
+        }
+
+        table th,
+        table td {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            text-align: left;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            vertical-align: middle;
+        }
+
+        table th {
+            background-color: #f8f9fa;
+        }
+
+        table thead tr {
+            background-color: #f8f9fa;
+        }
+
+        table td button {
+            display: block;
+            width: 80px;
+            text-align: center;
+            border: none;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 5px;
+            margin: 0 auto;
+        }
+
+        .cancel-button {
+            background-color: red;
+            color: white;
+        }
+
+        .order-button {
+            background-color: green;
+            color: white;
+        }
+
+        .order-count {
+            font-weight: bold;
+            color: #333;
+            margin-left: 10px;
+            font-size: 30px;
+        }
+
+        .canceled {
+            background-color: #ffdddd !important;
+        }
+
+        .center {
+            text-align: center;
+            font-size: 18px;
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .loading-message {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        .excel-button {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #217346; /* 엑셀 녹색 */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            text-decoration: none;
+            margin-right: 15px; /* 두 버튼 사이의 간격을 조정 */
+        }
+        .excel-button i {
+            margin-right: 8px;
+        }
+        .order-button2 {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #007bff; /* 파란색 */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .order-button2 i {
+            margin-right: 8px;
+        }
+
+        #grid2 {
+            background-color:  #f0fdfa; /* 연한 민트색 */
+            padding: 20px; /* 여백 추가 */
+            border-radius: 5px; /* 모서리 둥글게 추가 */
+        }
+
+        /* 기본 네비게이션 스타일 */
+        nav {
+            display: flex;
+            justify-content: center; /* 중앙 정렬 */
+            <!--background-color: rgba(255, 255, 255, 0.8); /* 배경 투명 효과 */-->
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 그림자 */
+            padding: 10px 0;
+            <!--position: sticky;--> /* 스크롤해도 상단 고정 */
+            top: 0;
+            z-index: 10; /* 다른 요소 위에 오도록 설정 */
+        }
+
+        .navbar {
+            display: flex;
+            gap: 20px; /* 탭 간격 */
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar li {
+            margin: 0;
+            padding: 0;
+        }
+
+        /* 링크 기본 스타일 */
+        .navbar a {
+            display: flex;
+            align-items: center; /* 아이콘과 텍스트 수직 중앙 정렬 */
+            gap: 8px; /* 아이콘과 텍스트 간격 */
+            text-decoration: none; /* 밑줄 제거 */
+            color: #555; /* 기본 텍스트 색상 */
+            padding: 10px 40px; /* 패딩 */
+            border-radius: 10px; /* 둥근 모서리 */
+            font-size: 30px;
+            transition: background-color 0.3s, color 0.3s; /* 애니메이션 효과 */
+        }
+
+        .navbar a:hover {
+            background-color: rgba(0, 120, 215, 0.15); /* 호버 시 배경 */
+            color: #0078d7; /* 텍스트 색상 변경 */
+        }
+
+        /* 활성화된 탭 스타일 */
+        .navbar a.active {
+            background-color: #0078d7; /* 활성화된 배경 */
+            color: white; /* 텍스트 흰색 */
+            font-weight: bold; /* 더 선명한 글씨 */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 약간의 그림자 효과 */
+        }
+
+        /* 아이콘 크기 */
+        .navbar a i {
+            font-size: 18px; /* 아이콘 크기 */
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <!-- 상단 네비게이션 바 -->
+    <nav>
+        <ul class="navbar">
+            <li><a href="/save" ><i class="fas fa-shopping-cart"></i> 주문</a></li>
+            <li><a href="/view"class="active"><i class="fas fa-search" ></i> 조회</a></li>
+            <li><a href="/excel"><i class="fas fa-file-excel"></i> 엑셀</a></li>
+            <li><a href="/finish"><i class="fas fa-check"></i> 발송완료</a></li>
+        </ul>
+    </nav>
+        <!-- 첫 번째 그리드 (주문 상태 '1' 또는 '3')만 조회 -->
+        <div class="grid open" id="grid1">
+            <div class="grid-header">
+                <h3 class="title">주문 목록</h3>
+                <!--<button class="button" onclick="location.href='/save'">주문</button>-->
+                <!-- 엑셀 버튼 -->
+<!--                <button class="excel-button" onclick="location.href='/excel'">
+                    <i class="fas fa-file-excel"></i>
+                    엑셀
+                </button>
+                &lt;!&ndash; 주문 버튼 &ndash;&gt;
+                <button class="order-button2" onclick="location.href='/save'">
+                    <i class="fas fa-receipt"> </i>
+                    주문
+                </button>-->
+                            <button class="toggle-button" onclick="toggleGrid(1)">
+                <i class="fas fa-minus"></i>
+                </button>
+            </div>
+            <div class="search-form">
+                <div class="search-inputs">
+                    <input type="text" id="searchName1" placeholder="주문자">
+                    <input type="text" id="searchPhone1" placeholder="전화번호">
+                    <button onclick="fetchOrders(1)">검색</button>
+                    <button onclick="markAsPaid(1)" style="background-color:#0a0a23; color: #fff;  border:none; " >입금완료</button>
+                </div>
+                <span class="order-count" id="orderCount1">0건</span>
+            </div>
+            <div id="gridContent1">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="center"><input type="checkbox" onclick="selectAll(this, 1)"></th>
+                            <th class="center">주문자</th>
+                            <th class="center">전화번호</th>
+                            <th class="center">주문 내용</th>
+                            <th class="center">수량</th>
+                            <th class="center">수령자</th>
+                            <th class="center">비고</th>
+                            <th class="center">상태</th>
+                            <th class="center">주문 날짜</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orderTableBody1">
+                        <!-- 주문 목록 데이터가 여기에 추가됩니다 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 두 번째 그리드 (주문 상태 '2'만 조회) -->
+        <div class="grid collapsed" id="grid2">
+            <div class="grid-header" onclick="toggleGrid(2)">
+                <h3 class="title">엑셀 목록</h3>
+                <button class="toggle-button">
+                    <i class="fas fa-plus"></i>
+                </button>
+            </div>
+            <div class="search-form">
+                <div class="search-inputs">
+                    <input type="text" id="searchName2" placeholder="주문자">
+                    <input type="text" id="searchPhone2" placeholder="전화번호">
+                    <button onclick="fetchOrders(2)">검색</button>
+                     <!--<button type="button" id="downloadExcelButton">엑셀 다운로드</button>-->
+                </div>
+                <span class="order-count" id="orderCount2">0건</span>
+            </div>
+            <div id="gridContent2">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="center"><input type="checkbox" onclick="selectAll(this, 2)"></th>
+                            <th class="center">주문자</th>
+                            <th class="center">전화번호</th>
+                            <th class="center">주문 내용</th>
+                            <th class="center">수량</th>
+                            <th class="center">수령자</th>
+                            <th class="center">비고</th>
+                            <th class="center">상태</th>
+                            <th class="center">주문 날짜</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orderTableBody2">
+                        <!-- 주문 목록 데이터가 여기에 추가됩니다 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 로딩 오버레이 -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-message">조회 중...</div>
+    </div>
+
+    <script>
+        function showLoadingOverlay() {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+
+        function hideLoadingOverlay() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+
+        async function fetchOrders(gridState) {
+            showLoadingOverlay();  // 로딩 오버레이 표시
+            const searchName = document.getElementById('searchName' + gridState).value;
+            const searchPhone = document.getElementById('searchPhone' + gridState).value;
+
+            let searchParams = {
+                name: searchName || '',
+                phone: searchPhone.replace(/[-\s]/g, '') || ''
+            };
+
+            if (gridState === 1) {
+                searchParams['order_state'] = '1,3';
+            } else if (gridState === 2) {
+                searchParams['order_state'] = '2';
+            }
+
+            try {
+                const response = await fetch("/fetch_orders", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    },
+                    body: JSON.stringify(searchParams)
+                });
+
+                const data = await response.json();
+                const orderTableBody = document.getElementById("orderTableBody" + gridState);
+                const orderCount = document.getElementById("orderCount" + gridState);
+                orderTableBody.innerHTML = '';  // 테이블을 초기화
+
+                // order_state가 '3'인 항목이 맨 위에 배치되도록 정렬
+                data.sort((a, b) => {
+                    if (a.order_state === '3' && b.order_state !== '3') return -1;
+                    if (a.order_state !== '3' && b.order_state === '3') return 1;
+                    return 0;
+                });
+
+                data.forEach(order => {
+                    const formattedDate = order.order_date;
+                    const row = document.createElement("tr");
+                    const isCanceled = order.order_state === "3";
+                    row.className = isCanceled ? "canceled" : "";
+                    row.innerHTML = `
+                        <td class="center"><input type="checkbox" class="orderCheckbox${gridState}" value="${order.order_id}" data-order-state="${order.order_state}"></td>
+                        <td style="font-size: 22px;" >${order.customer_name}</td>
+                        <td class="phone-cell" data-order-id="${order.order_id}">${order.customer_phone}</td>
+                        <td style="font-size: 22px;" >${order.product_name}</td>
+                        <td style="font-size: 22px;" class="center" >${order.product_quantity}</td>
+                        <td style="font-size: 22px;" >${order.recipient_name}</td>
+                        <td style="font-size: 22px;" >${order.order_remark}</td>
+                        <td class="center"><button class="${isCanceled ? 'order-button' : 'cancel-button'}" onclick="toggleOrderState('${order.order_id}', this)">${isCanceled ? '주문' : '취소'}</button></td>
+                        <td style="font-size: 22px;"  class="center">${formattedDate}</td>
+                    `;
+                    orderTableBody.appendChild(row);
+                });
+
+                orderCount.textContent = `${orderTableBody.children.length}건`;
+
+                // 전화번호 셀에 클릭 이벤트 추가
+                document.querySelectorAll('.phone-cell').forEach(cell => {
+                    cell.addEventListener('click', function () {
+                        // 모든 행에서 highlight 클래스 제거
+                        document.querySelectorAll('tr').forEach(row => row.classList.remove('highlight'));
+                        // 클릭된 행에 highlight 클래스 추가
+                        this.parentElement.classList.add('highlight');
+
+                        // 해당 주문의 ORDER_ID 가져오기
+                        const orderId = this.dataset.orderId;
+                        window.location.href = `/update?orderId=${orderId}`;
+                    });
+                });
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                hideLoadingOverlay();  // 로딩 오버레이 숨기기
+            }
+        }
+
+        function selectAll(checkbox, state) {
+            const checkboxes = document.querySelectorAll('.orderCheckbox' + state);
+            checkboxes.forEach(cb => cb.checked = checkbox.checked);
+        }
+
+        function toggleGrid(gridNumber) {
+            const grid = document.getElementById('grid' + gridNumber);
+            const toggleButton = document.querySelector(`#grid${gridNumber} .toggle-button i`);
+            grid.classList.toggle('collapsed');
+            if (grid.classList.contains('collapsed')) {
+                toggleButton.classList.remove('fa-minus');
+                toggleButton.classList.add('fa-plus');
+                grid.classList.remove('open');
+            } else {
+                toggleButton.classList.remove('fa-plus');
+                toggleButton.classList.add('fa-minus');
+                grid.classList.add('open');
+            }
+        }
+
+        async function toggleOrderState(orderId, button) {
+            const newState = button.classList.contains('order-button') ? '1' : '3';
+            const confirmMessage = button.classList.contains('order-button') ? '주문을 활성화하시겠습니까?' : '주문을 취소하시겠습니까?';
+
+            if (confirm(confirmMessage)) {
+                try {
+                    showLoadingOverlay();  // 로딩 오버레이 표시
+                    const response = await fetch("/cancel_order", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Accept": "application/json"
+                        },
+                        body: JSON.stringify({ order_id: orderId, order_state: newState })
+                    });
+
+                    const data = await response.json();
+                    if (data.success) {
+                        fetchOrders(1);  // 첫 번째 그리드 다시 조회
+                        fetchOrders(2);  // 두 번째 그리드 다시 조회
+                    } else {
+                        alert('작업이 실패했습니다.');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                } finally {
+                    hideLoadingOverlay();  // 로딩 오버레이 숨기기
+                }
+            }
+        }
+
+        async function markAsPaid(gridState) {
+            const selectedCheckboxes = Array.from(document.querySelectorAll('.orderCheckbox' + gridState + ':checked'));
+            const selectedOrders = selectedCheckboxes
+                .filter(checkbox => checkbox.dataset.orderState !== '3')
+                .map(checkbox => checkbox.value);
+
+            if (selectedOrders.length === 0) {
+                alert('입금 완료로 변경할 주문을 선택하십시오.');
+                return;
+            }
+
+            if (!confirm('선택된 주문들을 입금 완료 상태로 변경하시겠습니까?')) {
+                return;
+            }
+
+            try {
+                showLoadingOverlay();  // 로딩 오버레이 표시
+                const response = await fetch("/mark_as_paid", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    },
+                    body: JSON.stringify({ order_ids: selectedOrders, new_state: '2' })
+                });
+
+                const data = await response.json();
+                if (data.success) {
+                    fetchOrders(1);  // 첫 번째 그리드 다시 조회
+                    fetchOrders(2);  // 두 번째 그리드 다시 조회
+                } else {
+                    alert('입금 완료 상태로 변경하는데 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            } finally {
+                hideLoadingOverlay();  // 로딩 오버레이 숨기기
+            }
+
+            // 상태 변경 후, 두 그리드 모두 다시 조회
+            fetchOrders(1);
+            fetchOrders(2);
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            fetchOrders(1); // 첫 번째 그리드는 항상 펼쳐진 상태
+            fetchOrders(2);
+
+
+            // Download Excel file
+            document.getElementById('downloadExcelButton').addEventListener('click', function() {
+                window.location.href = '/download_excel';
+            });
+        });
+
+        // 입력 필드 가져오기 엔터키 처리
+        const searchNameInput = document.getElementById("searchName1");
+        const searchPhoneInput = document.getElementById("searchPhone1");
+
+        searchNameInput.addEventListener("keydown", function (event) {
+            if (event.key === "Enter") {
+                fetchOrders(1);
+                event.preventDefault();
+            }
+        });
+
+        searchPhoneInput.addEventListener("keydown", function (event) {
+            if (event.key === "Enter") {
+                fetchOrders(1);
+                event.preventDefault();
+            }
+        });
+
+    </script>
+</body>
+
+</html>

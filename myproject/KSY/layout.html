@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <link rel="icon" sizes="192x192" href="{{ url_for('static', filename='icons/icon-192x192.png') }}">
+    <meta name="theme-color" content="#000000">
+    <title>{% block title %}layout{% endblock %}</title>
+
+    {% block head %}
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 800px;
+            width: 100%;
+            margin: 20px;
+        }
+
+        .container img {
+            width: 200px;
+            height: 200px;
+            margin-bottom: 20px;
+        }
+
+        .container form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container label {
+            margin-top: 10px;
+            text-align: left;
+        }
+
+        .container input[type="text"],
+        .container input[type="password"] {
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            width: calc(100% - 20px);
+        }
+
+        .container input[type="submit"] {
+            padding: 10px;
+            margin-top: 20px;
+            background-color: #ff7f00 ;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .container input[type="submit"]:hover {
+            background-color: #28a745;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: #fff;
+            padding: 50px; /* 패딩을 늘려서 컨테이너 내부 여유 공간을 더 줍니다 */
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 1000px; /* 최대 너비를 늘려 더 많은 내용을 담을 수 있습니다 */
+            width: 100%;
+            margin: 20px; /* 화면의 중앙에 위치하도록 20px 마진을 추가합니다 */
+        }
+        .container h1 {
+            margin-bottom: 30px; /* 제목 하단 여백을 늘려서 공간을 더 줍니다 */
+        }
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 12px; /* 입력 필드의 패딩을 늘려서 더 편안한 간격을 제공합니다 */
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        input[type="submit"] {
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            padding: 30px 40px; /* 버튼 패딩을 늘려서 클릭 영역을 더 넓힙니다 */
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 10px;
+        }
+        input[type="submit"]:hover {
+            background-color: #218838;
+        }
+
+.button {
+            width: 40%;
+            padding: 30px;
+            font-size: 35px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .save-button {
+            background-color: #28a745;
+            color: #fff;
+        }
+
+        .save-button:hover {
+            background-color: #218838;
+        }
+
+        .view-button {
+            background-color: #007bff;
+            color: #fff;
+        }
+
+        .view-button:hover {
+            background-color: #0056b3;
+        }
+         .error {
+            color: red;
+            animation: blink 1s step-start infinite;
+            margin-top: 20px;
+            font-size: 15px;
+        }
+
+        @keyframes blink {
+        50% {
+            opacity: 0;
+        }
+
+    </style>
+    {% endblock %}
+</head>
+<body>
+    {% block content %}{% endblock %}
+
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>
