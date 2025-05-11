@@ -337,7 +337,7 @@
                     <tr>
                         <th>이름</th>
                         <th>전화번호</th>
-                        <th>선택</th>
+                        <!--<th>선택</th> -->
                     </tr>
                 </thead>
                 <tbody>
@@ -513,55 +513,64 @@
                     })
                     .then(customers => {
                         console.log(`Fetched ${isFetchingAll ? 'all' : 'specific'} customers:`, customers);
-                        if (customers.length === 1) {
-                            callback(customers[0]);
-                        } else {
-                            openModalWithCustomers(customers, callback);
-                        }
+                        // 한건이면 무조건 선택되게 주석
+                        //if (customers.length === 1) {
+                        //    callback(customers[0]);
+                        //} else {
+                        //    openModalWithCustomers(customers, callback);
+                        // }
+                        // 무조건 모달창 열기
+                        openModalWithCustomers(customers, callback);
                     })
                     .catch(error => console.error(`Error fetching ${isFetchingAll ? 'all' : 'specific'} customers:`, error));
             }
 
-            function openModalWithCustomers(customers, callback) {
-                const tbody = document.querySelector('#customerTable tbody');
-                tbody.innerHTML = ''; // 기존 데이터 초기화
+function openModalWithCustomers(customers, callback) {
+    const tbody = document.querySelector('#customerTable tbody');
+    tbody.innerHTML = ''; // 기존 데이터 초기화
 
-                if (customers.length === 0) {
-                    const tr = document.createElement('tr');
-                    const td = document.createElement('td');
-                    td.setAttribute('colspan', '3');
-                    td.textContent = '고객 정보가 없습니다.';
-                    tr.appendChild(td);
-                    tbody.appendChild(tr);
-                } else {
-                    customers.forEach(function(customer) {
-                        const tr = document.createElement('tr');
+    if (customers.length === 0) {
+        const tr = document.createElement('tr');
+        const td = document.createElement('td');
+        td.setAttribute('colspan', '3');
+        td.textContent = '고객 정보가 없습니다.';
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+    } else {
+        customers.forEach(function(customer) {
+            const tr = document.createElement('tr');
 
-                        const tdName = document.createElement('td');
-                        tdName.textContent = customer.customer_name;
-                        tr.appendChild(tdName);
+            const tdName = document.createElement('td');
+            tdName.textContent = customer.customer_name;
+            tr.appendChild(tdName);
 
-                        const tdPhone = document.createElement('td');
-                        tdPhone.textContent = customer.customer_phone;
-                        tr.appendChild(tdPhone);
+            const tdPhone = document.createElement('td');
+            tdPhone.textContent = customer.customer_phone;
+            // 전화번호 td를 클릭하면 callback이 실행됨
+            tdPhone.style.cursor = 'pointer'; // 커서 모양 변경(선택 가능하게)
+            tdPhone.addEventListener('click', function() {
+                callback(customer);
+                modal.style.display = 'none';
+            });
+            tr.appendChild(tdPhone);
+            // 선택버튼 주석
+            //const tdSelect = document.createElement('td');
+            //const selectBtn = document.createElement('button');
+            //selectBtn.textContent = '선택';
+            //selectBtn.classList.add('popbtn');
+            //selectBtn.addEventListener('click', function() {
+            //    callback(customer);
+            //    modal.style.display = 'none';
+            //});
+            //tdSelect.appendChild(selectBtn);
+            //tr.appendChild(tdSelect);
+            // 선택버튼 주석 끝
+            tbody.appendChild(tr);
+        });
+    }
 
-                        const tdSelect = document.createElement('td');
-                        const selectBtn = document.createElement('button');
-                        selectBtn.textContent = '선택';
-                        selectBtn.classList.add('popbtn');
-                        selectBtn.addEventListener('click', function() {
-                            callback(customer);
-                            modal.style.display = 'none';
-                        });
-                        tdSelect.appendChild(selectBtn);
-                        tr.appendChild(tdSelect);
-
-                        tbody.appendChild(tr);
-                    });
-                }
-
-                modal.style.display = 'flex';
-            }
+    modal.style.display = 'flex';
+}
 
         //숫자 처리
         function validateNumberInput(event) {
