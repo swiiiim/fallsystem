@@ -646,6 +646,8 @@ def create_app():
     # Secret Key 설정
     app.config['SECRET_KEY'] = 'your_secret_key'
     app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://KSY:1234@localhost/fallsystem'
+    #app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://KSY:1234@swiiiim-4559.postgres.pythonanywhere-services.com:14559/fallsystem'
+    #소스 반영 할땐 이걸로 해야해 명심 하기
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     app.config['UPLOAD_FOLDER'] = 'uploads'
     app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB 파일 업로드 제한
