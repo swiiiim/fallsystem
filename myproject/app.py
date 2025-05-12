@@ -357,6 +357,62 @@ def download_excel():
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
 
+#블루베리엑셀
+@main.route('/download_blueexcel')
+def download_blueexcel():
+    # order_state가 '2'인 주문만 가져옵니다.
+    orders = OrderSave.query.filter_by(order_state='2').all()
+    data = []
+
+    # 주문별로 1건씩만 기록하고, 수량/중량을 각각 주문 수량으로 기록
+    for order in orders:
+        data.append({
+            "주문자 이름": order.customer_name,
+            "주문자 전화번호": order.customer_phone,
+            "우편번호": "52510",
+            "주소": "경남 사천시 축동면 탑리길 321-29(가을단감농원)",
+            "수령자 이름": order.recipient_name,
+            "수령자 우편번호": order.recipient_postal_code,
+            "수령자 기본주소": f"{order.recipient_address_line1} {order.recipient_address_line2}",
+            "수령자 전화번호": order.recipient_phone,
+            "배송 메시지": order.delivery_message,
+            "중량": order.product_quantity,      # 중량도 수량과 동일하게
+            "제품명": order.product_name,
+            "수량": order.product_quantity,      # 주문 수량
+        })
+
+    # 데이터프레임 생성
+    df = pd.DataFrame(data)
+
+    # 엑셀 파일 생성
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+        df.to_excel(writer, index=False, sheet_name='Orders')
+
+        # 열 너비 자동 조정
+        worksheet = writer.sheets['Orders']
+        for idx, col in enumerate(df.columns):
+            max_len = max(df[col].astype(str).map(len).max(), len(col)) + 2
+            worksheet.set_column(idx, idx, max_len)
+
+    output.seek(0)
+
+    # excel_date 업데이트
+    for order in orders:
+        order.excel_date = datetime.utcnow()
+    db.session.commit()
+
+    # 파일 이름 생성
+    today_date = datetime.now().strftime("%Y-%m-%d")
+    excelfile_name = f"{today_date}_가을단감농원_블루베리(우체국).xls"
+
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name=excelfile_name,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+
 #수정화면
 @main.route('/update')
 @login_required

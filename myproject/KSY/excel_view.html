@@ -58,7 +58,7 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 10px;
-            cursor: pointer;
+            /* cursor: pointer; 이 부분을 삭제하였습니다 */
         }
 
         .grid-header .title {
@@ -235,10 +235,29 @@
             font-size: 16px;
             text-decoration: none;
             margin-right: 15px; /* 두 버튼 사이의 간격을 조정 */
+            cursor: pointer;
         }
         .excel-button i {
             margin-right: 8px;
         }
+
+        .blueexcel-button {
+            display: inline-flex;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #9C27B0 ; /* 연보라색(라벤더) */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            text-decoration: none;
+            margin-right: 15px; /* 두 버튼 사이의 간격을 조정 */
+            cursor: pointer;
+        }
+        .blueexcel-button i {
+            margin-right: 8px;
+        }
+
         .order-button2 {
             display: inline-flex;
             align-items: center;
@@ -423,7 +442,8 @@
                         <i class="fas fa-search"></i>
                         조회
                     </button>-->
-                    <button  class = "excel-button" type="button" id="downloadExcelButton">엑셀 다운로드</button>
+                    <button  class = "excel-button" type="button" id="downloadExcelButton">엑셀 다운로드(단감)</button>
+                    <button  class = "blueexcel-button" type="button" id="downloadBlueExcelButton">엑셀 다운로드(블루베리)</button>
             </div>
             <div class="search-form">
                 <div class="search-inputs">
@@ -594,15 +614,23 @@
             }
         }
 
-
-
+        //단감 엑셀
         document.addEventListener("DOMContentLoaded", function () {
            fetchOrders(2);
-
-
             // Download Excel file
             document.getElementById('downloadExcelButton').addEventListener('click', function() {
                 window.location.href = '/download_excel';
+                setTimeout(function() {
+                    location.reload(); // 약간의 지연 후 새로고침
+                }, 1000); // 서버에서 엑셀 생성 및 다운로드 완료 예상 시간 (초 단위로 조정 가능)
+            });
+        });
+        //블루베리 엑셀
+        document.addEventListener("DOMContentLoaded", function () {
+           fetchOrders(2);
+            // Download Excel file (블루베리)
+            document.getElementById('downloadBlueExcelButton').addEventListener('click', function() {
+                window.location.href = '/download_blueexcel';
                 setTimeout(function() {
                     location.reload(); // 약간의 지연 후 새로고침
                 }, 1000); // 서버에서 엑셀 생성 및 다운로드 완료 예상 시간 (초 단위로 조정 가능)
