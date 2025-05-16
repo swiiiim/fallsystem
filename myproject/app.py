@@ -65,8 +65,8 @@ def save():
 
 @main.route('/save', methods=['POST'])
 def order_save():
-
-    customer = Customer.query.filter_by(customer_name= request.form['customerName'], customer_phone= request.form['customerPhone']).first()
+    customer = Customer.query.filter_by(customer_name=request.form['customerName'],
+                                        customer_phone=request.form['customerPhone']).first()
     if not customer:
         # 고객이 없으면 새로운 고객 레코드 추가
         new_customer_id = generate_customer_id()
@@ -88,7 +88,6 @@ def order_save():
         )
         db.session.add(customer)
 
-
     new_order_id = generate_order_id()  # 새로운 주문 ID를 생성
     customername = request.form['customerName']
     customerphone = request.form['customerPhone']
@@ -97,11 +96,18 @@ def order_save():
     zipcode = request.form['zipCode']
     address1 = request.form['address1']
     address2 = request.form['address2']
-    remark   = request.form['orderRemark']
+    remark = request.form['orderRemark']
     quantity = request.form['quantity']
     productname = request.form['productname']
     productid = request.form['productid']
     productweight = request.form['selectedProductCd']
+
+    # 라디오 버튼 값 가져오기
+    payment_status = request.form.get('payment_status', 'N')
+
+    # 주문 상태 설정: 'N'이면 order_state = '1', 'Y'이면 order_state = '2'
+    order_state = '2' if payment_status == 'Y' else '1'
+
     order = OrderSave(
         customer_name=customername,
         customer_phone=customerphone,
@@ -110,19 +116,22 @@ def order_save():
         recipient_postal_code=zipcode,
         recipient_address_line1=address1,
         recipient_address_line2=address2,
-        order_date=db.func.current_timestamp(), # 현재 시간 설정
+        order_date=db.func.current_timestamp(),  # 현재 시간 설정
         order_remark=remark,
         product_quantity=quantity,
         product_name=productname,
         product_id=productid,
         product_weight=productweight,
         order_id=new_order_id,
-        order_state = '1'  # 최초 저장 시 '1' 값 설정
+        order_state=order_state  # 라디오 버튼 값에 따라 설정
     )
     db.session.add(order)
     db.session.commit()
 
-    return "주문 완료"
+    # 주문 상태에 따른 메시지 설정
+    status_message = "주문 완료 (입금완료)" if payment_status == 'Y' else "주문 완료 (미입금)"
+
+    return status_message
 
 #TB_PRODUCT 데이터 호출
 @main.route('/api/products', methods=['GET'])

@@ -238,6 +238,49 @@
             cursor: pointer;
             font-size: 18px;
         }
+        /* 라디오 버튼을 체크박스처럼 보이게 만드는 CSS */
+        .payment-status-group .payment-options {
+            display: flex;
+            flex-direction: row;
+            gap: 20px; /* 옵션 간의 간격 */
+        }
+
+        .payment-status-group .form-check {
+            display: flex;
+            align-items: center;
+        }
+
+        .payment-status-group .form-check-input[type="radio"] {
+            width: 20px;
+            height: 20px;
+            appearance: checkbox; /* 체크박스처럼 보이게 변경 */
+            -webkit-appearance: checkbox;
+            -moz-appearance: checkbox;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+
+        .payment-status-group .form-check-label {
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        /* 모바일 환경에서 더 큰 터치 영역 */
+        @media (max-width: 768px) {
+            .payment-status-group .form-check-input[type="radio"] {
+                width: 22px;
+                height: 22px;
+            }
+
+            .payment-status-group .form-check-label {
+                font-size: 16px;
+            }
+
+            /* 모바일에서 간격 조정 */
+            .payment-status-group .payment-options {
+                gap: 15px;
+            }
+        }
 
         /* 숨기기 */
         .hidden {
@@ -267,7 +310,7 @@
                         <input type="hidden" id="productid" name="productid" readonly>
                         <input type="hidden" id="productname" name="productname" readonly>
 
-                    <select id="productSelect" name="productSelect" required style="width: 45%; font-size: 20px;" >
+                    <select id="productSelect" name="productSelect" required style="width: 100%; font-size: 20px;" >
                         <option value="">선택하세요</option>
                     </select>
                 </div>
@@ -324,7 +367,23 @@
                 <label for="orderRemark">비고:</label>
                 <input type="text" id="orderRemark" name="orderRemark" style="font-size: 18px; " >
             </div>
-
+            <div class="form-group payment-status-group">
+                <label>입금 상태</label>
+                <div class="payment-options">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="payment_status" id="unpaid" value="N" checked>
+                        <label class="form-check-label" for="unpaid">
+                            미입금
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="payment_status" id="paid" value="Y">
+                        <label class="form-check-label" for="paid">
+                            입금완료
+                        </label>
+                    </div>
+                </div>
+            </div>
             <input type="submit" value="주문하기">
         </form>
     </div>

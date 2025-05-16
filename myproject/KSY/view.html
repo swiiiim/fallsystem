@@ -344,7 +344,7 @@
         <!-- 첫 번째 그리드 (주문 상태 '1' 또는 '3')만 조회 -->
         <div class="grid open" id="grid1">
             <div class="grid-header">
-                <h3 class="title">주문 목록</h3>
+                <h3 class="title">(미입금) 주문 목록</h3>
                 <!--<button class="button" onclick="location.href='/save'">주문</button>-->
                 <!-- 엑셀 버튼 -->
 <!--                <button class="excel-button" onclick="location.href='/excel'">
@@ -394,7 +394,7 @@
         <!-- 두 번째 그리드 (주문 상태 '2'만 조회) -->
         <div class="grid collapsed" id="grid2">
             <div class="grid-header" onclick="toggleGrid(2)">
-                <h3 class="title">엑셀 목록</h3>
+                <h3 class="title">(입금완료) 엑셀 목록</h3>
                 <button class="toggle-button">
                     <i class="fas fa-plus"></i>
                 </button>
@@ -496,7 +496,7 @@
                         <td style="font-size: 22px;" class="center" >${order.product_quantity}</td>
                         <td style="font-size: 22px;" >${order.recipient_name}</td>
                         <td style="font-size: 22px;" >${order.order_remark}</td>
-                        <td class="center"><button class="${isCanceled ? 'order-button' : 'cancel-button'}" onclick="toggleOrderState('${order.order_id}', this)">${isCanceled ? '주문' : '취소'}</button></td>
+                        <td class="center"><button class="${isCanceled ? 'order-button' : 'cancel-button'}" onclick="toggleOrderState('${order.order_id}', this)">${isCanceled ? '주문' : '보류'}</button></td>
                         <td style="font-size: 22px;"  class="center">${formattedDate}</td>
                     `;
                     orderTableBody.appendChild(row);
@@ -546,7 +546,7 @@
 
         async function toggleOrderState(orderId, button) {
             const newState = button.classList.contains('order-button') ? '1' : '3';
-            const confirmMessage = button.classList.contains('order-button') ? '주문을 활성화하시겠습니까?' : '주문을 취소하시겠습니까?';
+            const confirmMessage = button.classList.contains('order-button') ? '주문을 활성화하시겠습니까?' : '주문을 보류하시겠습니까?';
 
             if (confirm(confirmMessage)) {
                 try {
