@@ -330,12 +330,13 @@
 
             <h2>주문자 정보</h2>
             <div class="form-group" style="display: flex; gap: 20px;">
-                <div style="flex: 1;">
-                    <label for="customerName">주문자 이름:</label>
-                    <input  type="text" id="customerName" name="customerName" required style="width: 45%; font-size: 18px; ">
-                    <button type="button" id="searchCustomerBtn" >검색</button>
+                <div style="display: inline-flex; align-items: center; flex-wrap: nowrap; width: 100%;">
+                    <label for="customerName" style="white-space: nowrap;">주문자 이름: </label>
+                    <input type="checkbox" id="sameAsCustomer" name="sameAsCustomer" style="width: 25px; height: 25px; margin: 0 10px; flex-shrink: 0;"> 정보 동일(주문자)
                 </div>
             </div>
+                    <input type="text" id="customerName" name="customerName" required style="width: 50%; font-size: 18px; flex-shrink: 1;">
+                    <button type="button" id="searchCustomerBtn" style="margin-left: 5px; flex-shrink: 0;">검색</button>
             <div class="form-group">
                 <label for="customerPhone">주문자 전화번호:</label>
                 <input type="text" class="input-field" id="customerPhone" name="customerPhone" maxlength="13"  onkeypress="validateNumberInput(event)" onblur="formatPhoneNumber(this)" oninput="formatPhoneNumber(this)" required style="font-size: 18px;" >
@@ -344,7 +345,7 @@
             <h2>수령자 정보</h2>
             <div class="form-group">
                 <label for="recipientName">수령자 이름:</label>
-                <input type="text" id="recipientName" name="recipientName" required style="width: 45%; font-size: 18px; ">
+                <input type="text" id="recipientName" name="recipientName" required style="width: 50%; font-size: 18px; ">
                 <button type="button"id="searchRecipientBtn" >검색</button>
             </div>
             <div class="form-group">
@@ -748,8 +749,38 @@ function openModalWithCustomers(customers, callback) {
         });
     });
 
+  //주문자 정보와 동일
+  document.getElementById('sameAsCustomer').addEventListener('change', function() {
+    if(this.checked) {
+      // 체크박스가 선택되면 주문자 정보를 수령인 정보에 복사
+      document.getElementById('recipientName').value = document.getElementById('customerName').value;
+      document.getElementById('recipientPhone').value = document.getElementById('customerPhone').value;
+    } else {
+      // 체크가 해제되면 수령인 정보 초기화
+      document.getElementById('recipientName').value = '';
+      document.getElementById('recipientPhone').value = '';
+    }
+  });
+  // 주문자 동일체크박스 상태 변경 이벤트
+  document.getElementById('sameAsCustomer').addEventListener('change', function() {
+    syncCustomerData();
+  });
+  // 주문자 정보 입력 필드의 변경 이벤트
+  document.getElementById('customerName').addEventListener('input', function() {
+    syncCustomerData();
+  });
+  document.getElementById('customerPhone').addEventListener('input', function() {
+    syncCustomerData();
+  });
+  // 주문자 정보를 수령인 정보에 동기화하는 함수
+  function syncCustomerData() {
+    if(document.getElementById('sameAsCustomer').checked) {
+      document.getElementById('recipientName').value = document.getElementById('customerName').value;
+      document.getElementById('recipientPhone').value = document.getElementById('customerPhone').value || '';
+    }
+  }
 
-    </script>
+</script>
 
 </body>
 </html>
