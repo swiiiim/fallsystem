@@ -488,7 +488,7 @@
                 <div id="myModal" class="modal" style="display:none;">
                   <div class="modal-content">
                     <span id="closeModal">&times;</span>
-                    <h2>주문 정보</h2>
+                    <h2>주문 정보(입금완료)</h2>
                     <table border="1">
                       <thead>
                         <tr>
@@ -774,52 +774,49 @@
         const modal = document.getElementById('myModal');
         const closeBtn = document.getElementById('closeModal');
 
-        // 버튼 클릭시 모달 열기
         document.getElementById('orderCount2').onclick = function() {
-            // 나중에 서버에서 데이터 로드하는 부분
-            // 지금은 예시 데이터로 대체
-            const data = {
-                table_data: [
-                    { product_name: '제품A', quantity: 10 },
-                    { product_name: '제품B', quantity: 5 },
-                    { product_name: '제품C', quantity: 8 }
-                ],
-            };
+            fetch('/ordersum')  // 서버 API 호출
+                .then(response => {
+                    if (!response.ok) throw new Error('네트워크 오류');
+                    return response.json();
+                })
+                .then(data => {
+                    const tbody = document.getElementById('tableBody');
+                    tbody.innerHTML = '';
 
-            const tbody = document.getElementById('tableBody');
-            tbody.innerHTML = ''; // 기존 내용 삭제
+                    let totalQuantity = 0;
 
-            let totalQuantity = 0;
+                    // 데이터 표에 등록
+                    data.order_sums.forEach(item => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${item.product_name}</td>
+                            <td>${item.product_quantity}</td>
+                        `;
+                        tbody.appendChild(row);
+                        totalQuantity += item.product_quantity;
+                    });
 
-            // 데이터 표에 등록
-            data.table_data.forEach(item => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${item.product_name}</td>
-                    <td>${item.quantity}</td>
-                `;
-                tbody.appendChild(row);
-                totalQuantity += item.quantity;
-            });
+                    // 마지막 행에 총 수량 넣기
+                    const totalRow = document.createElement('tr');
+                    totalRow.innerHTML = `
+                        <td style="font-weight:bold;">총 수량</td>
+                        <td style="font-weight:bold;">${totalQuantity}</td>
+                    `;
+                    tbody.appendChild(totalRow);
 
-            // 마지막 행에 총 수량 넣기
-            const totalRow = document.createElement('tr');
-            totalRow.innerHTML = `
-                <td style="font-weight:bold;">총 수량</td>
-                <td style="font-weight:bold;">${totalQuantity}</td>
-            `;
-            tbody.appendChild(totalRow);
-
-            // 모달 열기
-            modal.style.display = 'flex';
+                    modal.style.display = 'flex';
+                })
+                .catch(error => {
+                    console.error('데이터 불러오기 실패:', error);
+                    alert('데이터를 불러오는 데 실패하였습니다.');
+                });
         };
 
-        // 닫기 버튼 클릭시
         closeBtn.onclick = function() {
             modal.style.display = 'none';
         };
 
-        // 모달 바깥 클릭시 닫기
         window.onclick = function(event) {
             if (event.target == modal) {
                 modal.style.display = 'none';
