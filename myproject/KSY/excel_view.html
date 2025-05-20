@@ -359,6 +359,35 @@
             background-color: #F08080;
             color: white; /* 가독성을 위한 흰색 텍스트 */
         }
+        /* 모달 배경 */
+        .modal {
+          position: fixed;
+          z-index: 999;
+          left: 0; top: 0;
+          width: 100%; height: 100%;
+          background-color: rgba(0,0,0,0.4);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+
+        /* 모달 내용 박스 */
+        .modal-content {
+          background-color: #fff;
+          padding: 20px;
+          width: 400px;
+          position: relative;
+          border-radius: 8px;
+        }
+
+        /* 닫기 버튼 */
+        #closeModal {
+          position: absolute;
+          top: 10px;
+          right: 15px;
+          font-size: 24px;
+          cursor: pointer;
+        }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -453,8 +482,24 @@
                     <button type="button" onclick="markAsFinish(2)" id="finish" style="background-color:#0a0a23; color: #fff;  border:none; " >완료</button>
 
                 </div>
-                <span class="order-count" id="orderCount2">0건</span>
+                <span class="order-count" id="orderCount2" style="cursor:pointer;" >0건</span>
             </div>
+                <!-- 모달창 구조 -->
+                <div id="myModal" class="modal" style="display:none;">
+                  <div class="modal-content">
+                    <span id="closeModal">&times;</span>
+                    <h2>주문 정보</h2>
+                    <table border="1">
+                      <thead>
+                        <tr>
+                          <th>제품명</th>
+                          <th>수량</th>
+                        </tr>
+                      </thead>
+                      <tbody id="tableBody"></tbody>
+                    </table>
+                  </div>
+                </div>
             <div id="gridContent2">
                 <table>
                     <thead>
@@ -725,6 +770,61 @@
             }
         });
 
+        //모달 영역
+        const modal = document.getElementById('myModal');
+        const closeBtn = document.getElementById('closeModal');
+
+        // 버튼 클릭시 모달 열기
+        document.getElementById('orderCount2').onclick = function() {
+            // 나중에 서버에서 데이터 로드하는 부분
+            // 지금은 예시 데이터로 대체
+            const data = {
+                table_data: [
+                    { product_name: '제품A', quantity: 10 },
+                    { product_name: '제품B', quantity: 5 },
+                    { product_name: '제품C', quantity: 8 }
+                ],
+            };
+
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = ''; // 기존 내용 삭제
+
+            let totalQuantity = 0;
+
+            // 데이터 표에 등록
+            data.table_data.forEach(item => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.product_name}</td>
+                    <td>${item.quantity}</td>
+                `;
+                tbody.appendChild(row);
+                totalQuantity += item.quantity;
+            });
+
+            // 마지막 행에 총 수량 넣기
+            const totalRow = document.createElement('tr');
+            totalRow.innerHTML = `
+                <td style="font-weight:bold;">총 수량</td>
+                <td style="font-weight:bold;">${totalQuantity}</td>
+            `;
+            tbody.appendChild(totalRow);
+
+            // 모달 열기
+            modal.style.display = 'flex';
+        };
+
+        // 닫기 버튼 클릭시
+        closeBtn.onclick = function() {
+            modal.style.display = 'none';
+        };
+
+        // 모달 바깥 클릭시 닫기
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        };
     </script>
 </body>
 

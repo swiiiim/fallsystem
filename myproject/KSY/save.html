@@ -194,52 +194,94 @@
      #postcodeButton {
          margin-top: 10px;
      }
-        /* [zip] 모달 배경 */
-        #modalBackground-zip {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-        }
+    /* [zip] 모달 배경 */
+    #modalBackground-zip {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 1000;
+        -webkit-backdrop-filter: blur(2px); /* iOS 디바이스 지원 */
+        backdrop-filter: blur(2px); /* 배경 살짝 흐리게 처리 */
+    }
 
-        /* [zip] 모달 박스 */
+    /* [zip] 모달 박스 */
+    #modalContent-zip {
+        position: fixed; /* absolute 대신 fixed 사용 */
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        width: 90%; /* 모바일에서 더 넓게 사용 */
+        max-width: 500px; /* 태블릿을 위한 최대 너비 증가 */
+        height: 70vh; /* 모바일에서 더 넓은 영역 사용 */
+        max-height: 600px; /* 최대 높이 제한 */
+        border-radius: 12px; /* 더 부드러운 모서리 */
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* 그림자 강화 */
+        overflow: hidden;
+        z-index: 1001;
+    }
+
+    /* [zip] 닫기 버튼 */
+    #modalCloseBtn-zip {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background-color: #ff4d4f;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 36px; /* 모바일에서 더 큰 터치 영역 */
+        height: 36px; /* 모바일에서 더 큰 터치 영역 */
+        text-align: center;
+        line-height: 36px;
+        cursor: pointer;
+        font-size: 20px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* 그림자 추가 */
+        -webkit-tap-highlight-color: transparent; /* 모바일에서 탭 시 하이라이트 제거 */
+    }
+
+    /* 미디어 쿼리 추가 - 작은 모바일 화면용 */
+    @media screen and (max-width: 480px) {
         #modalContent-zip {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            width: 70%;
-            <!--width: 90%;-->
-            max-width: 400px;
-            height: 50vh; /* 화면 높이의 50% */
-            <!--//height: 400px;-->
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            z-index: 1001;
+            width: 95%;
+            height: 80vh;
+            border-radius: 10px;
         }
 
-        /* [zip] 닫기 버튼 */
         #modalCloseBtn-zip {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: #ff4d4f;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            text-align: center;
-            line-height: 30px;
-            cursor: pointer;
-            font-size: 18px;
+            width: 40px;
+            height: 40px;
+            line-height: 40px;
+            font-size: 22px;
         }
+    }
+
+    /* 미디어 쿼리 추가 - 태블릿용 */
+    @media screen and (min-width: 768px) and (max-width: 1024px) {
+        #modalContent-zip {
+            width: 80%;
+            max-width: 600px;
+            height: 60vh;
+        }
+    }
+
+    /* 가로 모드 대응 */
+    @media screen and (max-height: 500px) {
+        #modalContent-zip {
+            height: 90vh;
+        }
+    }
+
+    /* iOS 안전 영역 대응 */
+    @supports (padding-bottom: env(safe-area-inset-bottom)) {
+        #modalContent-zip {
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+    }
         /* 라디오 버튼을 체크박스처럼 보이게 만드는 CSS */
         .payment-status-group .payment-options {
             display: flex;
@@ -288,13 +330,35 @@
         .hidden {
             display: none;
         }
+        .buttonD {
+            background-color: rgba(255, 228, 196, 0.7); /* 투명한 살색(bisque) */
+            color: #333; /* 어두운 글자색으로 가독성 확보 */
+            border: 1px solid rgba(210, 180, 140, 0.4); /* 연한 테두리 */
+            border-radius: 50px; /* 동그랗게 만들기 */
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 20px;
+            margin: 4px 0;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 그림자 효과 */
+            transition: all 0.3s ease; /* 부드러운 효과 전환 */
+        }
+        .buttonD:hover {
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* 호버 시 그림자 강화 */
+            transform: translateY(-2px); /* 살짝 위로 떠오르는 효과 */
+        }
+
     </style>
     <title>가을단감농원_주문화면</title>
 </head>
 <body>
     <div class="container">
-
+        <div class="form-group" style="display: flex; gap: 10px;">
         <h1>주문 정보 입력</h1>
+       <!-- <button class="buttonD" onclick="location.href='/view'">조회 바로가기</button>-->
+        </div>
         <form id="productForm" method="POST" action="/save" >
             <div class="form-group" style="display: flex; gap: 10px;">
               <div class="divproduct1" style="flex: 1;">
@@ -666,88 +730,164 @@ function openModalWithCustomers(customers, callback) {
             }
         }
 
-    document.addEventListener('DOMContentLoaded', function () {
-        document.getElementById('postcodeButton').addEventListener('click', function () {
-            // 동적으로 모달 영역 생성
-            const modalDiv = document.createElement('div');
-            modalDiv.id = 'modal-zip';
-            modalDiv.style.position = 'fixed';
-            modalDiv.style.top = '0';
-            modalDiv.style.left = '0';
-            modalDiv.style.width = '100%';
-            modalDiv.style.height = '100%';
-            modalDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-            modalDiv.style.zIndex = '1000';
-            modalDiv.style.display = 'flex';
-            modalDiv.style.alignItems = 'center';
-            modalDiv.style.justifyContent = 'center';
+document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('postcodeButton').addEventListener('click', function () {
+        // 동적으로 모달 영역 생성
+        const modalDiv = document.createElement('div');
+        modalDiv.id = 'modal-zip';
+        modalDiv.style.position = 'fixed';
+        modalDiv.style.top = '0';
+        modalDiv.style.left = '0';
+        modalDiv.style.width = '100%';
+        modalDiv.style.height = '100%';
+        modalDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+        modalDiv.style.zIndex = '1000';
+        modalDiv.style.display = 'flex';
+        modalDiv.style.alignItems = 'center';
+        modalDiv.style.justifyContent = 'center';
+        // 배경 블러 처리 (iOS 및 모던 브라우저)
+        modalDiv.style.backdropFilter = 'blur(2px)';
+        modalDiv.style.webkitBackdropFilter = 'blur(2px)';
 
-            // 검색 창 컨테이너 크기 2배 확대
-            const innerDiv = document.createElement('div');
-            innerDiv.style.position = 'relative';
-            innerDiv.style.width = '90%'; // 기존 화폭 비율 유지
-            innerDiv.style.maxWidth = '600px'; // 기존 `400px`에서 2배 증가
-            innerDiv.style.height = '600px'; // 기존 높이도 2배 증가
-            innerDiv.style.backgroundColor = '#FFF';
-            innerDiv.style.borderRadius = '8px';
-            innerDiv.style.overflow = 'hidden';
+        // 디바이스 크기 감지
+        const isMobile = window.innerWidth <= 768;
+        const isTablet = window.innerWidth > 768 && window.innerWidth <= 1024;
 
-            // 닫기 버튼
-            const closeButton = document.createElement('button');
-            closeButton.innerText = '×';
-            closeButton.style.position = 'absolute';
-            closeButton.style.top = '10px';
-            closeButton.style.right = '10px';
-            closeButton.style.background = '#ff4d4f';
-            closeButton.style.color = '#FFF';
-            closeButton.style.border = 'none';
-            closeButton.style.borderRadius = '50%';
-            closeButton.style.width = '30px';
-            closeButton.style.height = '30px';
-            closeButton.style.textAlign = 'center';
-            closeButton.style.lineHeight = '30px';
-            closeButton.style.cursor = 'pointer';
-            innerDiv.appendChild(closeButton);
+        // 검색 창 컨테이너 - 디바이스 크기에 맞게 조정
+        const innerDiv = document.createElement('div');
+        innerDiv.style.position = 'relative';
 
-            // 모달 닫기 이벤트
-            closeButton.addEventListener('click', function () {
-                document.body.removeChild(modalDiv);
-            });
+        // 반응형 크기 설정
+        if (isMobile) {
+            innerDiv.style.width = '95%';
+            innerDiv.style.maxWidth = '450px';
+            innerDiv.style.height = isMobile && window.innerHeight < 700 ? '80vh' : '70vh'; // 작은 화면은 더 크게
+        } else if (isTablet) {
+            innerDiv.style.width = '85%';
+            innerDiv.style.maxWidth = '550px';
+            innerDiv.style.height = '60vh';
+        } else {
+            innerDiv.style.width = '80%';
+            innerDiv.style.maxWidth = '600px';
+            innerDiv.style.height = '600px';
+        }
 
-            // 모달의 배경 클릭 시 닫기
-            modalDiv.addEventListener('click', function (e) {
-                if (e.target === modalDiv) {
+        innerDiv.style.backgroundColor = '#FFF';
+        innerDiv.style.borderRadius = isMobile ? '12px' : '8px';
+        innerDiv.style.overflow = 'hidden';
+        innerDiv.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+
+        // iOS의 안전 영역 대응
+        if ('env' in window.CSS && CSS.supports('padding-bottom: env(safe-area-inset-bottom)')) {
+            innerDiv.style.paddingBottom = 'env(safe-area-inset-bottom)';
+        }
+
+        // 닫기 버튼 - 모바일에서 더 큰 터치 영역
+        const closeButton = document.createElement('button');
+        closeButton.innerText = '×';
+        closeButton.style.position = 'absolute';
+        closeButton.style.top = isMobile ? '15px' : '10px';
+        closeButton.style.right = isMobile ? '15px' : '10px';
+        closeButton.style.background = '#ff4d4f';
+        closeButton.style.color = '#FFF';
+        closeButton.style.border = 'none';
+        closeButton.style.borderRadius = '50%';
+        closeButton.style.width = isMobile ? '40px' : '30px';
+        closeButton.style.height = isMobile ? '40px' : '30px';
+        closeButton.style.textAlign = 'center';
+        closeButton.style.lineHeight = isMobile ? '40px' : '30px';
+        closeButton.style.cursor = 'pointer';
+        closeButton.style.fontSize = isMobile ? '24px' : '20px';
+        closeButton.style.fontWeight = 'bold';
+        closeButton.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.2)';
+        // 모바일 터치 최적화
+        closeButton.style.webkitTapHighlightColor = 'transparent';
+        innerDiv.appendChild(closeButton);
+
+        // 헤더 추가 (선택사항 - 주소검색 제목 표시)
+        const headerDiv = document.createElement('div');
+        headerDiv.style.width = '100%';
+        headerDiv.style.padding = '15px';
+        headerDiv.style.textAlign = 'center';
+        headerDiv.style.borderBottom = '1px solid #f0f0f0';
+        headerDiv.style.fontWeight = 'bold';
+        headerDiv.style.fontSize = '16px';
+        headerDiv.innerHTML = '주소 검색';
+        if (!isMobile) { // 모바일에서는 공간 절약을 위해 헤더 생략 가능
+            innerDiv.appendChild(headerDiv);
+        }
+
+        // 모달 닫기 이벤트 - 모바일에 맞게 최적화
+        const closeModal = function() {
+            // 모달 제거 시 부드러운 애니메이션 효과
+            modalDiv.style.opacity = '0';
+            modalDiv.style.transition = 'opacity 0.2s ease';
+
+            setTimeout(() => {
+                // iOS에서 가끔 발생하는 오류 방지를 위한 예외 처리
+                try {
                     document.body.removeChild(modalDiv);
+                } catch(e) {
+                    console.log("Modal already removed");
                 }
-            });
+            }, 200);
+        };
 
-            // 모달 구조 삽입
-            modalDiv.appendChild(innerDiv);
-            document.body.appendChild(modalDiv);
+        closeButton.addEventListener('click', closeModal);
 
-            // 카카오 주소 검색기 삽입
-            new daum.Postcode({
-                oncomplete: function (data) {
-                    // 도로명 주소, 지번 주소, 우편번호 저장
-                    const roadAddr = data.roadAddress;
-                    const jibunAddr = data.jibunAddress;
-                    const zoneCode = data.zonecode;
-
-                    // 결과를 입력 필드에 반영
-                    document.getElementById('zipCode').value = zoneCode;
-                    document.getElementById('address1').value = roadAddr || jibunAddr;
-
-                    // 선택된 주소를 알림으로 표시
-                    //alert('Selected address: ' + (roadAddr || jibunAddr));
-
-                    // 모달 닫기
-                    document.body.removeChild(modalDiv);
-                },
-                width: '100%', // 검색 창의 너비 100% 활용
-                height: '100%', // 검색 창의 높이를 컨테이너에 맞춤
-            }).embed(innerDiv);
+        // 모달의 배경 클릭 시 닫기
+        modalDiv.addEventListener('click', function (e) {
+            if (e.target === modalDiv) {
+                closeModal();
+            }
         });
+
+        // 모달 구조 삽입
+        modalDiv.appendChild(innerDiv);
+        document.body.appendChild(modalDiv);
+
+        // 모달 등장 애니메이션
+        requestAnimationFrame(() => {
+            modalDiv.style.opacity = '0';
+            modalDiv.style.transition = 'opacity 0.3s ease';
+            requestAnimationFrame(() => {
+                modalDiv.style.opacity = '1';
+            });
+        });
+
+        // 카카오 주소 검색기 삽입 - 모바일 최적화
+        new daum.Postcode({
+            oncomplete: function (data) {
+                // 도로명 주소, 지번 주소, 우편번호 저장
+                const roadAddr = data.roadAddress;
+                const jibunAddr = data.jibunAddress;
+                const zoneCode = data.zonecode;
+
+                // 결과를 입력 필드에 반영
+                document.getElementById('zipCode').value = zoneCode;
+                document.getElementById('address1').value = roadAddr || jibunAddr;
+
+                // 모바일에서는 진동 피드백 추가 (지원되는 브라우저에서만)
+                if (isMobile && 'vibrate' in navigator) {
+                    navigator.vibrate(50);
+                }
+
+                // 모달 닫기
+                closeModal();
+            },
+            width: '100%',
+            height: '100%',
+            animation: true, // 카카오 검색 결과 애니메이션 활성화
+            // 모바일 환경에 맞는 추가 옵션
+            theme: {
+                searchBgColor: "#f5f5f5", // 검색창 배경색
+                queryTextSize: isMobile ? "16px" : "14px", // 모바일에서 더 큰 글자 크기
+            },
+            hideMapBtn: isMobile, // 모바일에서는 지도 버튼 숨기기(선택사항)
+            hideEngBtn: isMobile, // 모바일에서는 영문 버튼 숨기기(선택사항)
+        }).embed(innerDiv);
     });
+});
 
   //주문자 정보와 동일
   document.getElementById('sameAsCustomer').addEventListener('change', function() {

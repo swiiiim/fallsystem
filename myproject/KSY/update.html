@@ -698,88 +698,164 @@
             await fetchProducts();
         };
 
-    document.addEventListener('DOMContentLoaded', function () {
-        document.getElementById('postcodeButton').addEventListener('click', function () {
-            // 동적으로 모달 영역 생성
-            const modalDiv = document.createElement('div');
-            modalDiv.id = 'modal-zip';
-            modalDiv.style.position = 'fixed';
-            modalDiv.style.top = '0';
-            modalDiv.style.left = '0';
-            modalDiv.style.width = '100%';
-            modalDiv.style.height = '100%';
-            modalDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
-            modalDiv.style.zIndex = '1000';
-            modalDiv.style.display = 'flex';
-            modalDiv.style.alignItems = 'center';
-            modalDiv.style.justifyContent = 'center';
+document.addEventListener('DOMContentLoaded', function () {
+    document.getElementById('postcodeButton').addEventListener('click', function () {
+        // 동적으로 모달 영역 생성
+        const modalDiv = document.createElement('div');
+        modalDiv.id = 'modal-zip';
+        modalDiv.style.position = 'fixed';
+        modalDiv.style.top = '0';
+        modalDiv.style.left = '0';
+        modalDiv.style.width = '100%';
+        modalDiv.style.height = '100%';
+        modalDiv.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+        modalDiv.style.zIndex = '1000';
+        modalDiv.style.display = 'flex';
+        modalDiv.style.alignItems = 'center';
+        modalDiv.style.justifyContent = 'center';
+        // 배경 블러 처리 (iOS 및 모던 브라우저)
+        modalDiv.style.backdropFilter = 'blur(2px)';
+        modalDiv.style.webkitBackdropFilter = 'blur(2px)';
 
-            // 검색 창 컨테이너 크기 2배 확대
-            const innerDiv = document.createElement('div');
-            innerDiv.style.position = 'relative';
-            innerDiv.style.width = '90%'; // 기존 화폭 비율 유지
-            innerDiv.style.maxWidth = '600px'; // 기존 `400px`에서 2배 증가
-            innerDiv.style.height = '600px'; // 기존 높이도 2배 증가
-            innerDiv.style.backgroundColor = '#FFF';
-            innerDiv.style.borderRadius = '8px';
-            innerDiv.style.overflow = 'hidden';
+        // 디바이스 크기 감지
+        const isMobile = window.innerWidth <= 768;
+        const isTablet = window.innerWidth > 768 && window.innerWidth <= 1024;
 
-            // 닫기 버튼
-            const closeButton = document.createElement('button');
-            closeButton.innerText = '×';
-            closeButton.style.position = 'absolute';
-            closeButton.style.top = '10px';
-            closeButton.style.right = '10px';
-            closeButton.style.background = '#ff4d4f';
-            closeButton.style.color = '#FFF';
-            closeButton.style.border = 'none';
-            closeButton.style.borderRadius = '50%';
-            closeButton.style.width = '30px';
-            closeButton.style.height = '30px';
-            closeButton.style.textAlign = 'center';
-            closeButton.style.lineHeight = '30px';
-            closeButton.style.cursor = 'pointer';
-            innerDiv.appendChild(closeButton);
+        // 검색 창 컨테이너 - 디바이스 크기에 맞게 조정
+        const innerDiv = document.createElement('div');
+        innerDiv.style.position = 'relative';
 
-            // 모달 닫기 이벤트
-            closeButton.addEventListener('click', function () {
-                document.body.removeChild(modalDiv);
-            });
+        // 반응형 크기 설정
+        if (isMobile) {
+            innerDiv.style.width = '95%';
+            innerDiv.style.maxWidth = '450px';
+            innerDiv.style.height = isMobile && window.innerHeight < 700 ? '80vh' : '70vh'; // 작은 화면은 더 크게
+        } else if (isTablet) {
+            innerDiv.style.width = '85%';
+            innerDiv.style.maxWidth = '550px';
+            innerDiv.style.height = '60vh';
+        } else {
+            innerDiv.style.width = '80%';
+            innerDiv.style.maxWidth = '600px';
+            innerDiv.style.height = '600px';
+        }
 
-            // 모달의 배경 클릭 시 닫기
-            modalDiv.addEventListener('click', function (e) {
-                if (e.target === modalDiv) {
+        innerDiv.style.backgroundColor = '#FFF';
+        innerDiv.style.borderRadius = isMobile ? '12px' : '8px';
+        innerDiv.style.overflow = 'hidden';
+        innerDiv.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.15)';
+
+        // iOS의 안전 영역 대응
+        if ('env' in window.CSS && CSS.supports('padding-bottom: env(safe-area-inset-bottom)')) {
+            innerDiv.style.paddingBottom = 'env(safe-area-inset-bottom)';
+        }
+
+        // 닫기 버튼 - 모바일에서 더 큰 터치 영역
+        const closeButton = document.createElement('button');
+        closeButton.innerText = '×';
+        closeButton.style.position = 'absolute';
+        closeButton.style.top = isMobile ? '15px' : '10px';
+        closeButton.style.right = isMobile ? '15px' : '10px';
+        closeButton.style.background = '#ff4d4f';
+        closeButton.style.color = '#FFF';
+        closeButton.style.border = 'none';
+        closeButton.style.borderRadius = '50%';
+        closeButton.style.width = isMobile ? '40px' : '30px';
+        closeButton.style.height = isMobile ? '40px' : '30px';
+        closeButton.style.textAlign = 'center';
+        closeButton.style.lineHeight = isMobile ? '40px' : '30px';
+        closeButton.style.cursor = 'pointer';
+        closeButton.style.fontSize = isMobile ? '24px' : '20px';
+        closeButton.style.fontWeight = 'bold';
+        closeButton.style.boxShadow = '0 2px 5px rgba(0, 0, 0, 0.2)';
+        // 모바일 터치 최적화
+        closeButton.style.webkitTapHighlightColor = 'transparent';
+        innerDiv.appendChild(closeButton);
+
+        // 헤더 추가 (선택사항 - 주소검색 제목 표시)
+        const headerDiv = document.createElement('div');
+        headerDiv.style.width = '100%';
+        headerDiv.style.padding = '15px';
+        headerDiv.style.textAlign = 'center';
+        headerDiv.style.borderBottom = '1px solid #f0f0f0';
+        headerDiv.style.fontWeight = 'bold';
+        headerDiv.style.fontSize = '16px';
+        headerDiv.innerHTML = '주소 검색';
+        if (!isMobile) { // 모바일에서는 공간 절약을 위해 헤더 생략 가능
+            innerDiv.appendChild(headerDiv);
+        }
+
+        // 모달 닫기 이벤트 - 모바일에 맞게 최적화
+        const closeModal = function() {
+            // 모달 제거 시 부드러운 애니메이션 효과
+            modalDiv.style.opacity = '0';
+            modalDiv.style.transition = 'opacity 0.2s ease';
+
+            setTimeout(() => {
+                // iOS에서 가끔 발생하는 오류 방지를 위한 예외 처리
+                try {
                     document.body.removeChild(modalDiv);
+                } catch(e) {
+                    console.log("Modal already removed");
                 }
-            });
+            }, 200);
+        };
 
-            // 모달 구조 삽입
-            modalDiv.appendChild(innerDiv);
-            document.body.appendChild(modalDiv);
+        closeButton.addEventListener('click', closeModal);
 
-            // 카카오 주소 검색기 삽입
-            new daum.Postcode({
-                oncomplete: function (data) {
-                    // 도로명 주소, 지번 주소, 우편번호 저장
-                    const roadAddr = data.roadAddress;
-                    const jibunAddr = data.jibunAddress;
-                    const zoneCode = data.zonecode;
-
-                    // 결과를 입력 필드에 반영
-                    document.getElementById('zipCode').value = zoneCode;
-                    document.getElementById('address1').value = roadAddr || jibunAddr;
-
-                    // 선택된 주소를 알림으로 표시
-                    //alert('Selected address: ' + (roadAddr || jibunAddr));
-
-                    // 모달 닫기
-                    document.body.removeChild(modalDiv);
-                },
-                width: '100%', // 검색 창의 너비 100% 활용
-                height: '100%', // 검색 창의 높이를 컨테이너에 맞춤
-            }).embed(innerDiv);
+        // 모달의 배경 클릭 시 닫기
+        modalDiv.addEventListener('click', function (e) {
+            if (e.target === modalDiv) {
+                closeModal();
+            }
         });
+
+        // 모달 구조 삽입
+        modalDiv.appendChild(innerDiv);
+        document.body.appendChild(modalDiv);
+
+        // 모달 등장 애니메이션
+        requestAnimationFrame(() => {
+            modalDiv.style.opacity = '0';
+            modalDiv.style.transition = 'opacity 0.3s ease';
+            requestAnimationFrame(() => {
+                modalDiv.style.opacity = '1';
+            });
+        });
+
+        // 카카오 주소 검색기 삽입 - 모바일 최적화
+        new daum.Postcode({
+            oncomplete: function (data) {
+                // 도로명 주소, 지번 주소, 우편번호 저장
+                const roadAddr = data.roadAddress;
+                const jibunAddr = data.jibunAddress;
+                const zoneCode = data.zonecode;
+
+                // 결과를 입력 필드에 반영
+                document.getElementById('zipCode').value = zoneCode;
+                document.getElementById('address1').value = roadAddr || jibunAddr;
+
+                // 모바일에서는 진동 피드백 추가 (지원되는 브라우저에서만)
+                if (isMobile && 'vibrate' in navigator) {
+                    navigator.vibrate(50);
+                }
+
+                // 모달 닫기
+                closeModal();
+            },
+            width: '100%',
+            height: '100%',
+            animation: true, // 카카오 검색 결과 애니메이션 활성화
+            // 모바일 환경에 맞는 추가 옵션
+            theme: {
+                searchBgColor: "#f5f5f5", // 검색창 배경색
+                queryTextSize: isMobile ? "16px" : "14px", // 모바일에서 더 큰 글자 크기
+            },
+            hideMapBtn: isMobile, // 모바일에서는 지도 버튼 숨기기(선택사항)
+            hideEngBtn: isMobile, // 모바일에서는 영문 버튼 숨기기(선택사항)
+        }).embed(innerDiv);
     });
+});
     </script>
 
 </body>
