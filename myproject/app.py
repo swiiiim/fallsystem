@@ -10,6 +10,7 @@ import os
 from dateutil import parser
 from io import BytesIO
 from sqlalchemy import text
+from sqlalchemy import func
 
 # 블루프린트 초기화
 main = Blueprint('main', __name__, template_folder='KSY')
@@ -704,6 +705,39 @@ def fetch_finish():
         print(f"Error during fetching finish data: {e}")
         return jsonify({"success": False, "error": "서버에서 데이터를 조회하는 중 문제가 발생했습니다."}), 500
 
+
+@main.route('/ordersum', methods=['GET'])
+def order_sum():
+    # 문자열 '2'로 비교
+    filtered_orders = OrderSave.query.filter(OrderSave.order_state == '2')
+
+    # 제품별 수량 및 중량 합계, 중량 오름차순 정렬
+    grouped_data = (
+        filtered_orders
+        .with_entities(
+            OrderSave.product_id,
+            OrderSave.product_name,
+            OrderSave.product_weight,
+            func.sum(OrderSave.product_quantity).label('total_quantity')
+        )
+        .group_by(OrderSave.product_id, OrderSave.product_name, OrderSave.product_weight)
+        .order_by(OrderSave.product_weight.asc())  # 중량 기준 오름차순 정렬
+        .all()
+    )
+
+    order_sums = [{
+        'product_id': item.product_id,
+        'product_name': item.product_name,
+        'product_weight': item.product_weight,
+        'product_quantity': item.total_quantity,
+    } for item in grouped_data]
+
+    total_sum = sum(item['product_quantity'] for item in order_sums)
+
+    return jsonify({
+        'order_sums': order_sums,
+        'total_quantity': total_sum
+    })
 
 # 애플리케이션 팩토리 함수 필수###############################################################
 def create_app():
