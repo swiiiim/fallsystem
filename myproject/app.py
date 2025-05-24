@@ -320,9 +320,9 @@ def download_excel():
         for _ in range(order.product_quantity):
             data.append({
                 "주문자 이름": order.customer_name,
-                "주문자 전화번호": order.customer_phone,
                 "우편번호": "52510",
                 "주소": "경남 사천시 축동면 탑리길 321-29(가을단감농원)",
+                "주문자 전화번호": order.customer_phone,
                 "수령자 이름": order.recipient_name,
                 "수령자 우편번호": order.recipient_postal_code,
                 "수령자 기본주소": order.recipient_address_line1 + " " + order.recipient_address_line2,
@@ -378,9 +378,9 @@ def download_blueexcel():
     for order in orders:
         data.append({
             "주문자 이름": order.customer_name,
-            "주문자 전화번호": order.customer_phone,
             "우편번호": "52510",
             "주소": "경남 사천시 축동면 탑리길 321-29(가을단감농원)",
+            "주문자 전화번호": order.customer_phone,
             "수령자 이름": order.recipient_name,
             "수령자 우편번호": order.recipient_postal_code,
             "수령자 기본주소": f"{order.recipient_address_line1} {order.recipient_address_line2}",
