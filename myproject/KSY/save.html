@@ -330,24 +330,38 @@
         .hidden {
             display: none;
         }
-        .buttonD {
-            background-color: rgba(255, 228, 196, 0.7); /* 투명한 살색(bisque) */
-            color: #333; /* 어두운 글자색으로 가독성 확보 */
-            border: 1px solid rgba(210, 180, 140, 0.4); /* 연한 테두리 */
-            border-radius: 50px; /* 동그랗게 만들기 */
-            padding: 10px 20px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 20px;
-            margin: 4px 0;
-            cursor: pointer;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 그림자 효과 */
-            transition: all 0.3s ease; /* 부드러운 효과 전환 */
+        .form-groupD {
+          display: flex;
+          align-items: center;
+          justify-content: space-between; /* 좌우 끝 배치 */
+          gap: 10px;
+          padding: 10px 0;
         }
-        .buttonD:hover {
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3); /* 호버 시 그림자 강화 */
-            transform: translateY(-2px); /* 살짝 위로 떠오르는 효과 */
+
+        .buttonD {
+          padding: 12px 28px;
+          font-size: 1.08rem;
+          font-weight: 600;
+          color: #ffffff;
+          background: linear-gradient(90deg, #4f8cff 0%, #00e4d0 100%);
+          border: none;
+          border-radius: 999px; /* 완전히 동그란 형태 */
+          box-shadow: 0 4px 16px rgba(79, 140, 255, 0.10);
+          cursor: pointer;
+          transition: background 0.2s, transform 0.12s;
+        }
+        .buttonD:hover, .buttonD:active {
+          background: linear-gradient(90deg, #00e4d0 0%, #4f8cff 100%);
+          transform: translateY(-2px) scale(1.03);
+        }
+
+        /* 모바일/패드 대응 */
+        @media (max-width: 768px) {
+          .buttonD {
+            width: 100%;
+            font-size: 1rem;
+            padding: 16px 0;
+          }
         }
 
     </style>
@@ -355,9 +369,9 @@
 </head>
 <body>
     <div class="container">
-        <div class="form-group" style="display: flex; gap: 10px;">
+        <div class="form-groupD" style="display: flex; gap: 10px;">
         <h1>주문 정보 입력</h1>
-       <!-- <button class="buttonD" onclick="location.href='/view'">조회 바로가기</button>-->
+        <button class="buttonD" onclick="location.href='/view'">(미입금) 조회</button>
         </div>
         <form id="productForm" method="POST" action="/save" >
             <div class="form-group" style="display: flex; gap: 10px;">
@@ -407,10 +421,29 @@
             </div>
 
             <h2>수령자 정보</h2>
+
             <div class="form-group" style="display: flex; gap: 20px;">
                 <div style="display: inline-flex; align-items: center; flex-wrap: nowrap; width: 100%;">
                 <label for="recipientName">수령자 이름:</label>
                 <input type="checkbox" id="sameAsCustomer" name="sameAsCustomer" style="width: 25px; height: 25px; margin: 0 10px; flex-shrink: 0;"> 정보동일
+                <!-- 지우기/되살리기 토글 버튼 (필요 없으면 주석처리 가능) -->
+<!--                <button type="button" id="clearRestoreBtn" class="icon-btn" style="margin-left: 18px;" aria-label="입력값 지우기">
+                  <svg id="clearIcon" width="18" height="18" fill="none" viewBox="0 0 24 24">
+                    <path stroke="#7B7B7B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M3 11l7-7a4 4 0 0 1 5.66 0l4.24 4.24a4 4 0 0 1 0 5.66L13 21a4 4 0 0 1-5.66 0l-4.24-4.24A4 4 0 0 1 3 11z"></path>
+                    <path stroke="#7B7B7B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M5 13l5.5 5.5"></path>
+                  </svg>
+                  <span id="clearRestoreBtnText" style="margin-left:4px;">지우기</span>
+                </button>-->
+
+                <!-- 지우기만 하는 버튼 (필요 없으면 주석처리 가능) -->
+                <button type="button" id="clearOnlyBtn" class="icon-btn" style="margin-left: 8px;" aria-label="입력값만 지우기">
+                  <svg id="clearOnlyIcon" width="18" height="18" fill="none" viewBox="0 0 24 24">
+                    <path stroke="#FF5555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                      d="M3 11l7-7a4 4 0 0 1 5.66 0l4.24 4.24a4 4 0 0 1 0 5.66L13 21a4 4 0 0 1-5.66 0l-4.24-4.24A4 4 0 0 1 3 11z"></path>
+                    <path stroke="#FF5555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M5 13l5.5 5.5"></path>
+                  </svg>
+                  <span style="margin-left:4px;">지우기</span>
+                </button>
                 </div>
             </div>
                 <input type="text" id="recipientName" name="recipientName" required style="width: 50%; font-size: 18px; ">
@@ -924,6 +957,77 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
+
+    // --- 지우기/되살리기 버튼 전용 변수 및 이벤트 ---
+    let inputBackup = {};
+    let isCleared = false;
+
+    const clearRestoreBtn = document.getElementById('clearRestoreBtn');
+    if (clearRestoreBtn) {
+      clearRestoreBtn.addEventListener('click', function() {
+        if (!isCleared) {
+          // 백업 및 삭제
+          inputBackup = {
+            recipientName: document.getElementById('recipientName').value,
+            recipientPhone: document.getElementById('recipientPhone').value,
+            zipCode: document.getElementById('zipCode').value,
+            address1: document.getElementById('address1').value,
+            address2: document.getElementById('address2').value,
+            orderRemark: document.getElementById('orderRemark').value
+          };
+          document.getElementById('recipientName').value = '';
+          document.getElementById('recipientPhone').value = '';
+          document.getElementById('zipCode').value = '';
+          document.getElementById('address1').value = '';
+          document.getElementById('address2').value = '';
+          document.getElementById('orderRemark').value = '';
+          // 버튼 텍스트/아이콘 변경
+          this.innerHTML = `
+            <svg id="restoreIcon" width="18" height="18" fill="none" viewBox="0 0 24 24">
+              <path stroke="#36d1c4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                d="M19 7v6a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7" />
+              <path stroke="#36d1c4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                d="M7 10l5-5 5 5" />
+            </svg>
+            <span id="clearRestoreBtnText" style="margin-left:4px;">되살리기</span>
+          `;
+          isCleared = true;
+        } else {
+          // 복원
+          document.getElementById('recipientName').value = inputBackup.recipientName || '';
+          document.getElementById('recipientPhone').value = inputBackup.recipientPhone || '';
+          document.getElementById('zipCode').value = inputBackup.zipCode || '';
+          document.getElementById('address1').value = inputBackup.address1 || '';
+          document.getElementById('address2').value = inputBackup.address2 || '';
+          document.getElementById('orderRemark').value = inputBackup.orderRemark || '';
+          // 버튼 되돌림
+          this.innerHTML = `
+            <svg id="clearIcon" width="18" height="18" fill="none" viewBox="0 0 24 24">
+              <path stroke="#7B7B7B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                d="M3 11l7-7a4 4 0 0 1 5.66 0l4.24 4.24a4 4 0 0 1 0 5.66L13 21a4 4 0 0 1-5.66 0l-4.24-4.24A4 4 0 0 1 3 11z"></path>
+              <path stroke="#7B7B7B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                d="M5 13l5.5 5.5"></path>
+            </svg>
+            <span id="clearRestoreBtnText" style="margin-left:4px;">지우기</span>
+          `;
+          isCleared = false;
+        }
+      });
+    }
+
+    // --- 지우기만 버튼(별도 동작, 되살리기 무관) ---
+    const clearOnlyBtn = document.getElementById('clearOnlyBtn');
+    if (clearOnlyBtn) {
+      clearOnlyBtn.addEventListener('click', function() {
+        document.getElementById('recipientName').value = '';
+        document.getElementById('recipientPhone').value = '';
+        document.getElementById('zipCode').value = '';
+        document.getElementById('address1').value = '';
+        document.getElementById('address2').value = '';
+        document.getElementById('orderRemark').value = '';
+        // '지우기/되살리기' 버튼 상태(isCleared 변수나 inputBackup)에 영향을 주지 않음
+      });
+    }
 </script>
 
 </body>
