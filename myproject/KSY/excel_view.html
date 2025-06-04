@@ -534,7 +534,7 @@
                             <th class="center">수량</th>
                             <th class="center">수령자</th>
                             <th class="center">비고</th>
-                            <th class="center">상태</th>
+                            <th class="center">상태변경</th>
                             <th class="center">엑셀 여부</th>
                             <th class="center">주문 날짜</th>
                         </tr>
@@ -617,7 +617,7 @@
                         <td style="font-size: 22px;" class="center" >${order.product_quantity}</td>
                         <td style="font-size: 22px;" >${order.recipient_name}</td>
                         <td style="font-size: 22px;" >${order.order_remark}</td>
-                        <td class="center"><button class="${isCanceled ? 'order-button' : 'cancel-button'}" onclick="toggleOrderState('${order.order_id}', this)">${isCanceled ? '주문' : '보류'}</button></td>
+                        <td class="center"><button class="${isCanceled ? 'order-button' : 'cancel-button'}" onclick="toggleOrderState('${order.order_id}', this)">${isCanceled ? '주문하기' : '보류하기'}</button></td>
                         <td style="font-size: 22px;" class="${excelStatus === "N" ? "red-cell" : "center"}">${excelStatus}</td>
                         <td style="font-size: 22px;"  class="center">${formattedDate}</td>
                     `;
@@ -711,7 +711,7 @@
                 const checkboxes = Array.from(document.querySelectorAll(`.orderCheckbox${gridState}:checked`));
                 const selectedOrders = checkboxes
                     .filter(checkbox => checkbox.dataset.orderState !== '3') // 상태 '3'(보류)을 제외
-                    .filter(checkbox => checkbox.dataset.excelStatus !== 'N') // 상태 '3'(보류)을 제외
+                    //.filter(checkbox => checkbox.dataset.excelStatus !== 'N') // 엑셀여부가 N 제외
                     .map(checkbox => checkbox.value); // `order_id` 값만 추출
 
                 // 선택된 주문이 없는 경우
