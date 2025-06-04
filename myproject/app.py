@@ -597,9 +597,9 @@ def finishsave():
                 continue
 
             # `excel_date`가 NULL일 경우 스킵
-            if not order_data.excel_date:
-                skipped_ids.append(order_id)
-                continue
+            #if not order_data.excel_date:
+            #    skipped_ids.append(order_id)
+            #    continue
 
             # 고유 finish_id 생성
             new_finish_id = generate_finish_id()
