@@ -705,6 +705,25 @@ def fetch_finish():
         print(f"Error during fetching finish data: {e}")
         return jsonify({"success": False, "error": "서버에서 데이터를 조회하는 중 문제가 발생했습니다."}), 500
 
+@main.route('/delete', methods=['POST'])
+def order_delete():
+    try:
+        order_id = request.form['orderid']
+        order = OrderSave.query.filter_by(order_id=order_id).first()
+
+        if not order:
+            return jsonify({'error': 'Order not found'}), 404
+
+        db.session.delete(order)
+        db.session.commit()
+
+        # main.view로 이동
+        return redirect(url_for('main.view'))
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error deleting order: {e}")
+        return jsonify({'error': 'An error occurred while deleting the order'}), 500
+
 
 @main.route('/ordersum', methods=['GET'])
 def order_sum():

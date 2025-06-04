@@ -434,7 +434,7 @@
                 <table>
                     <thead>
                         <tr>
-                            <th class="center"><input type="checkbox" onclick="selectAll(this, 2)"></th>
+                            <th>복사</th>
                             <th>주문자</th>
                             <th>전화번호</th>
                             <th>주문 내용</th>
@@ -510,7 +510,7 @@
                     const isCanceled = order.order_state === "3";
                     row.className = isCanceled ? "canceled" : "";
                     row.innerHTML = `
-                        <td class="center"><input type="checkbox" class="orderCheckbox${gridState}" value="${order.order_id}" data-order-state="${order.order_state}"></td>
+                        <td style="font-size: 22px;"></td>
                         <td style="font-size: 22px;">${order.customer_name}</td>
                         <td class="phone-cell" data-order-id="${order.order_id}">${order.customer_phone}</td>
                         <td style="font-size: 22px;">${order.product_name}</td>
