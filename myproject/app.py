@@ -312,7 +312,10 @@ def allowed_file(filename):
 @main.route('/download_excel')
 def download_excel():
     # `order_state`가 '2'인 주문만 가져옵니다.
-    orders = OrderSave.query.filter_by(order_state='2').all()
+    #orders = OrderSave.query.filter_by(order_state='2').all()
+    # order_state가 '2'인 주문만 가져오고, order_date 기준으로 내림차순(최신순) 정렬
+    orders = OrderSave.query.filter_by(order_state='2').order_by(OrderSave.order_date.desc()).all()
+
     data = []
 
     # 주문 데이터를 Excel에 맞는 형식으로 변환
@@ -371,7 +374,9 @@ def download_excel():
 @main.route('/download_blueexcel')
 def download_blueexcel():
     # order_state가 '2'인 주문만 가져옵니다.
-    orders = OrderSave.query.filter_by(order_state='2').all()
+    #orders = OrderSave.query.filter_by(order_state='2').all()
+    # order_state가 '2'인 주문만 가져오고, order_date 기준으로 내림차순(최신순) 정렬
+    orders = OrderSave.query.filter_by(order_state='2').order_by(OrderSave.order_date.desc()).all()
     data = []
 
     # 주문별로 1건씩만 기록하고, 수량/중량을 각각 주문 수량으로 기록
