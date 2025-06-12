@@ -71,8 +71,8 @@ def order_save():
     if not customer:
         # 고객이 없으면 새로운 고객 레코드 추가
         new_customer_id = generate_customer_id()
-        customername = request.form['customerName']
-        customerphone = request.form['customerPhone']
+        customername = request.form['recipientName']
+        customerphone = request.form['recipientPhone']
         customer_post = request.form['zipCode']
         customer_address = request.form['address1']
         customer_address2 = request.form['address2']
