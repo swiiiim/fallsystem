@@ -320,9 +320,9 @@ def download_excel():
         for _ in range(order.product_quantity):
             data.append({
                 "주문자 이름": order.customer_name,
-                "주문자 전화번호": order.customer_phone,
                 "우편번호": "52510",
                 "주소": "경남 사천시 축동면 탑리길 321-29(가을단감농원)",
+                "주문자 전화번호": order.customer_phone,
                 "수령자 이름": order.recipient_name,
                 "수령자 우편번호": order.recipient_postal_code,
                 "수령자 기본주소": order.recipient_address_line1 + " " + order.recipient_address_line2,
@@ -378,9 +378,9 @@ def download_blueexcel():
     for order in orders:
         data.append({
             "주문자 이름": order.customer_name,
-            "주문자 전화번호": order.customer_phone,
             "우편번호": "52510",
             "주소": "경남 사천시 축동면 탑리길 321-29(가을단감농원)",
+            "주문자 전화번호": order.customer_phone,
             "수령자 이름": order.recipient_name,
             "수령자 우편번호": order.recipient_postal_code,
             "수령자 기본주소": f"{order.recipient_address_line1} {order.recipient_address_line2}",
@@ -597,9 +597,9 @@ def finishsave():
                 continue
 
             # `excel_date`가 NULL일 경우 스킵
-            if not order_data.excel_date:
-                skipped_ids.append(order_id)
-                continue
+            #if not order_data.excel_date:
+            #    skipped_ids.append(order_id)
+            #    continue
 
             # 고유 finish_id 생성
             new_finish_id = generate_finish_id()
@@ -704,6 +704,25 @@ def fetch_finish():
     except Exception as e:
         print(f"Error during fetching finish data: {e}")
         return jsonify({"success": False, "error": "서버에서 데이터를 조회하는 중 문제가 발생했습니다."}), 500
+
+@main.route('/delete', methods=['POST'])
+def order_delete():
+    try:
+        order_id = request.form['orderid']
+        order = OrderSave.query.filter_by(order_id=order_id).first()
+
+        if not order:
+            return jsonify({'error': 'Order not found'}), 404
+
+        db.session.delete(order)
+        db.session.commit()
+
+        # main.view로 이동
+        return redirect(url_for('main.view'))
+    except Exception as e:
+        db.session.rollback()
+        app.logger.error(f"Error deleting order: {e}")
+        return jsonify({'error': 'An error occurred while deleting the order'}), 500
 
 
 @main.route('/ordersum', methods=['GET'])
