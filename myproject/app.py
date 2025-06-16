@@ -66,34 +66,46 @@ def save():
 
 @main.route('/save', methods=['POST'])
 def order_save():
-    customer = Customer.query.filter_by(customer_name=request.form['customerName'],
-                                        customer_phone=request.form['customerPhone']).first()
-    if not customer:
-        # 고객이 없으면 새로운 고객 레코드 추가
-        new_customer_id = generate_customer_id()
-        customername = request.form['recipientName']
-        customerphone = request.form['recipientPhone']
-        customer_post = request.form['zipCode']
-        customer_address = request.form['address1']
-        customer_address2 = request.form['address2']
-        customer_remark = request.form.get('customerRemark', '')
+    # 조회와 추가 기준이 항상 동일하게 customerName, customerPhone을 사용해야 합니다.
+    customer_name = request.form['recipientName']
+    customer_phone = request.form['recipientPhone']
 
+    customer = Customer.query.filter_by(
+        customer_name=customer_name,
+        customer_phone=customer_phone
+    ).first()
+
+    customer_post = request.form['zipCode']
+    customer_address = request.form['address1']
+    customer_address2 = request.form['address2']
+    customer_remark = request.form.get('customerRemark', '')
+
+    if not customer:
+        # 고객이 없으면 추가
+        new_customer_id = generate_customer_id()
         customer = Customer(
             customer_id=new_customer_id,
-            customer_name=customername,
-            customer_phone=customerphone,
+            customer_name=customer_name,
+            customer_phone=customer_phone,
             customer_post=customer_post,
             customer_address=customer_address,
             customer_address2=customer_address2,
             customer_remark=customer_remark
         )
         db.session.add(customer)
+    else:
+        # 기존 고객이면 정보만 업데이트
+        customer.customer_post = customer_post
+        customer.customer_address = customer_address
+        customer.customer_address2 = customer_address2
+        customer.customer_remark = customer_remark
 
-    new_order_id = generate_order_id()  # 새로운 주문 ID를 생성
-    customername = request.form['customerName']
-    customerphone = request.form['customerPhone']
-    recipientname = request.form['recipientName']
-    recipientphone = request.form['recipientPhone']
+    # 주문 정보 저장 (이하 동일)
+    new_order_id = generate_order_id()
+    Ocustomer_name = request.form['customerName']
+    Ocustomer_phone = request.form['customerPhone']
+    recipient_name = request.form['recipientName']
+    recipient_phone = request.form['recipientPhone']
     zipcode = request.form['zipCode']
     address1 = request.form['address1']
     address2 = request.form['address2']
@@ -102,36 +114,32 @@ def order_save():
     productname = request.form['productname']
     productid = request.form['productid']
     productweight = request.form['selectedProductCd']
-
-    # 라디오 버튼 값 가져오기
     payment_status = request.form.get('payment_status', 'N')
-
-    # 주문 상태 설정: 'N'이면 order_state = '1', 'Y'이면 order_state = '2'
     order_state = '2' if payment_status == 'Y' else '1'
 
     order = OrderSave(
-        customer_name=customername,
-        customer_phone=customerphone,
-        recipient_name=recipientname,
-        recipient_phone=recipientphone,
+
+
+        customer_name=Ocustomer_name,
+        customer_phone=Ocustomer_phone,
+        recipient_name=recipient_name,
+        recipient_phone=recipient_phone,
         recipient_postal_code=zipcode,
         recipient_address_line1=address1,
         recipient_address_line2=address2,
-        order_date=db.func.current_timestamp(),  # 현재 시간 설정
+        order_date=db.func.current_timestamp(),
         order_remark=remark,
         product_quantity=quantity,
         product_name=productname,
         product_id=productid,
         product_weight=productweight,
         order_id=new_order_id,
-        order_state=order_state  # 라디오 버튼 값에 따라 설정
+        order_state=order_state
     )
     db.session.add(order)
     db.session.commit()
 
-    # 주문 상태에 따른 메시지 설정
     status_message = "주문 완료 (입금완료)" if payment_status == 'Y' else "주문 완료 (미입금)"
-
     return status_message
 
 #TB_PRODUCT 데이터 호출
@@ -484,38 +492,48 @@ def order_updatesave():
         if not order:
             return jsonify({'error': 'Order not found'}), 404
 
-        customer = Customer.query.filter_by(customer_name=request.form['customerName'],
-                                            customer_phone=request.form['customerPhone']).first()
+        # 이름, 전화번호 기준으로 고객 검색
+        customer_name = request.form['recipientName']
+        customer_phone = request.form['recipientPhone']
+
+        customer = Customer.query.filter_by(
+            customer_name=customer_name,
+            customer_phone=customer_phone
+        ).first()
+
+        customer_post = request.form['zipCode']
+        customer_address = request.form['address1']
+        customer_address2 = request.form['address2']
+        customer_remark = request.form.get('customerRemark', '')
 
         if not customer:
-            # 고객이 없으면 새로운 고객 레코드 추가
-            new_customer_id = generate_customer_id()  # 커스터머 ID를 생성하는 함수
-            customername = request.form['customerName']
-            customerphone = request.form['customerPhone']
-            customer_post = request.form['zipCode']
-            customer_address = request.form['address1']
-            customer_address2 = request.form['address2']
-            customer_remark = request.form.get('customerRemark', '')
-
+            # 고객이 없으면 신규 등록
+            new_customer_id = generate_customer_id()
             customer = Customer(
                 customer_id=new_customer_id,
-                customer_name=customername,
-                customer_phone=customerphone,
+                customer_name=customer_name,
+                customer_phone=customer_phone,
                 customer_post=customer_post,
                 customer_address=customer_address,
                 customer_address2=customer_address2,
                 customer_remark=customer_remark
             )
             db.session.add(customer)
+        else:
+            # 기존 고객이면 최신 정보로 갱신
+            customer.customer_post = customer_post
+            customer.customer_address = customer_address
+            customer.customer_address2 = customer_address2
+            customer.customer_remark = customer_remark
 
-        # 기존 주문을 업데이트합니다
+        # 주문 정보 업데이트
         order.customer_name = request.form['customerName']
         order.customer_phone = request.form['customerPhone']
         order.recipient_name = request.form['recipientName']
         order.recipient_phone = request.form['recipientPhone']
-        order.recipient_postal_code = request.form['zipCode']
-        order.recipient_address_line1 = request.form['address1']
-        order.recipient_address_line2 = request.form['address2']
+        order.recipient_postal_code = customer_post
+        order.recipient_address_line1 = customer_address
+        order.recipient_address_line2 = customer_address2
         order.order_remark = request.form['orderRemark']
         order.product_quantity = request.form['quantity']
         order.product_name = request.form['productname']
@@ -529,7 +547,6 @@ def order_updatesave():
         db.session.rollback()
         app.logger.error(f"Error saving order: {e}")
         return jsonify({'error': 'An error occurred while saving the order'}), 500
-
 
 @main.route('/excelDate', methods=['POST'])
 def order_exceldate():
