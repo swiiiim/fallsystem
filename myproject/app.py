@@ -2,7 +2,7 @@ import pandas as pd
 from flask import Flask, Blueprint, request, redirect, url_for, render_template, session, send_file,jsonify
 from flask_login import LoginManager, login_user, login_required, logout_user
 from models import db, User, OrderSave, generate_order_id, Product, Customer,generate_customer_id,generate_finish_id, Finish
-from datetime import datetime
+from datetime import datetime,timedelta
 from sqlalchemy.exc import SQLAlchemyError
 import xlsxwriter
 from werkzeug.utils import secure_filename
@@ -381,13 +381,12 @@ def download_excel():
 #블루베리엑셀
 @main.route('/download_blueexcel')
 def download_blueexcel():
-    # order_state가 '2'인 주문만 가져옵니다.
-    #orders = OrderSave.query.filter_by(order_state='2').all()
-    # order_state가 '2'인 주문만 가져오고, order_date 기준으로 내림차순(최신순) 정렬
+    # order_state가 '2'인 주문만 가져오고, 최신순 정렬
     orders = OrderSave.query.filter_by(order_state='2').order_by(OrderSave.order_date.desc()).all()
+    order_count = len(orders)  # 주문 건수
     data = []
 
-    # 주문별로 1건씩만 기록하고, 수량/중량을 각각 주문 수량으로 기록
+    # 주문 데이터를 리스트에 추가
     for order in orders:
         data.append({
             "주문자 이름": order.customer_name,
@@ -399,15 +398,15 @@ def download_blueexcel():
             "수령자 기본주소": f"{order.recipient_address_line1} {order.recipient_address_line2}",
             "수령자 전화번호": order.recipient_phone,
             "배송 메시지": order.delivery_message,
-            "중량": order.product_quantity,      # 중량도 수량과 동일하게
+            "중량": order.product_quantity,
             "제품명": order.product_name,
-            "수량": order.product_quantity,      # 주문 수량
+            "수량": order.product_quantity,
         })
 
     # 데이터프레임 생성
     df = pd.DataFrame(data)
 
-    # 엑셀 파일 생성
+    # 엑셀 파일 메모리 버퍼 생성
     output = BytesIO()
     with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
         df.to_excel(writer, index=False, sheet_name='Orders')
@@ -425,16 +424,21 @@ def download_blueexcel():
         order.excel_date = datetime.utcnow()
     db.session.commit()
 
-    # 파일 이름 생성
-    today_date = datetime.now().strftime("%Y-%m-%d")
-    excelfile_name = f"{today_date}_가을단감농원_블루베리(우체국).xls"
+    # 내일 날짜, 요일, 주문건수 반영된 파일명 생성 ('18일,수,19건.xls' 형태)
+    today = datetime.now()
+    next_day = today + timedelta(days=1)
+    weekday_kor = ["월", "화", "수", "목", "금", "토", "일"]
+    weekday = weekday_kor[next_day.weekday()]
+    day_num = next_day.day
+    excelfile_name = f"{day_num}일,{weekday},{order_count}건.xls"
 
     return send_file(
         output,
         as_attachment=True,
         download_name=excelfile_name,
-        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        mimetype='application/vnd.ms-excel'
     )
+
 
 #수정화면
 @main.route('/update')
