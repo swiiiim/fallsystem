@@ -1,4 +1,5 @@
 import pandas as pd
+import requests
 from flask import Flask, Blueprint, request, redirect, url_for, render_template, session, send_file,jsonify
 from flask_login import LoginManager, login_user, login_required, logout_user
 from models import db, User, OrderSave, generate_order_id, Product, Customer,generate_customer_id,generate_finish_id, Finish
@@ -11,6 +12,8 @@ from dateutil import parser
 from io import BytesIO
 from sqlalchemy import text
 from sqlalchemy import func
+import json, psycopg2
+
 
 # 블루프린트 초기화
 main = Blueprint('main', __name__, template_folder='KSY')
@@ -321,9 +324,10 @@ def allowed_file(filename):
 def download_excel():
     # `order_state`가 '2'인 주문만 가져옵니다.
     #orders = OrderSave.query.filter_by(order_state='2').all()
-    # order_state가 '2'인 주문만 가져오고, order_date 기준으로 내림차순(최신순) 정렬
+    # order_state가 '2'인 주문만 가져오고, 최신순 정렬
     orders = OrderSave.query.filter_by(order_state='2').order_by(OrderSave.order_date.desc()).all()
-
+    order_count = len(orders)  # 주문 건수
+    data = []
     data = []
 
     # 주문 데이터를 Excel에 맞는 형식으로 변환
@@ -366,9 +370,13 @@ def download_excel():
 
     db.session.commit()  # 업데이트된 `excel_date`를 데이터베이스에 저장
 
-    # 오늘 날짜를 포함한 파일 이름 생성 (YYYY-MM-DD 형식)
-    today_date = datetime.now().strftime("%Y-%m-%d")  # "YYYY-MM-DD" 형식으로 날짜 생성
-    excelfile_name = f"{today_date}_가을단감농원(우체국).xls"
+    # 내일 날짜, 요일, 주문건수 반영된 파일명 생성 ('18일,수,19건.xls' 형태)
+    today = datetime.now()
+    next_day = today + timedelta(days=1)
+    weekday_kor = ["월", "화", "수", "목", "금", "토", "일"]
+    weekday = weekday_kor[next_day.weekday()]
+    day_num = next_day.day
+    excelfile_name = f"{day_num}일,{weekday},{order_count}건.xls"
 
     # 엑셀 파일을 클라이언트에 다운로드로 제공
     return send_file(
@@ -783,6 +791,136 @@ def order_sum():
         'order_sums': order_sums,
         'total_quantity': total_sum
     })
+
+
+# DB에 로그 기록하는 함수
+def log_alimtalk_send(order_id, customer_name, customer_phone, product_name, message, status, error_message, message_id, response_data):
+    conn = psycopg2.connect('postgresql://KSY:1234@localhost/fallsystem')  # 실제 연결 문자열로 교체하세요
+    cursor = conn.cursor()
+    insert_query = """
+        INSERT INTO alimtalk_logs (
+            order_id, customer_name, customer_phone, product_name, message, sent_at, status, error_message, message_id, response_data
+        ) VALUES (
+            %s, %s, %s, %s, %s, CURRENT_TIMESTAMP, %s, %s, %s, %s
+        );
+    """
+    cursor.execute(insert_query, (
+        order_id, customer_name, customer_phone, product_name, message, status, error_message, message_id, json.dumps(response_data)
+    ))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+@main.route('/send-alimtalk', methods=['POST'])
+def send_alimtalk():
+    try:
+        orders = request.json.get('orders', [])
+        results = []
+
+        for order in orders:
+            customer_phone = order.get('customer_phone', '').replace('-', '').strip()
+            customer_name = order.get('customer_name', '')
+            product_name = order.get('product_name', '')
+            product_quantity = order.get('product_quantity', '')
+            order_id = order.get('order_id')
+
+            # 전화번호 검증
+            if not customer_phone:
+                results.append({
+                    'order_id': order_id,
+                    'success': False,
+                    'message': '전화번호 없음'
+                })
+                continue
+
+            # 메시지 구성
+            message = f"{customer_name}님, {product_name} {product_quantity}개 주문이 완료되었습니다."
+
+            # API 요청 데이터
+            sms_data = {
+                'apikey': 'hjl1ybbuhz8pz79l8wticygxt4i2f2gt',  # 실제 API 키
+                'userid': 'kimyh1964',
+                'senderkey': 'a42677021ccee9340b0619840bbc8907928ac571',
+                'tpl_code': 'xxxxxxxxxxxx',
+                'sender': '01035654807',
+                'receiver_1': customer_phone,
+                'subject_1': '주문 완료 알림',
+                'message_1': message,
+            }
+
+            # 버튼 정보 (필요 시)
+            button_info = {
+                'button': [{
+                    'name': '주문확인',
+                    'linkType': 'WL',
+                    'linkTypeName': '웹링크',
+                    'linkMobile': 'https://example.com/order',
+                    'linkPc': 'https://example.com/order'
+                }]
+            }
+            sms_data['button_1'] = json.dumps(button_info)
+
+            try:
+                response = requests.post('https://kakaoapi.aligo.in/akv10/alimtalk/send/', data=sms_data)
+                response_data = response.json()
+
+                success = response_data.get('code') == '0'
+                message_response = response_data.get('message', '')
+                message_id = response_data.get('messageId')  # 반환되는 메시지 ID, 없으면 None
+
+                # 성공/실패 로그 DB 저장
+                log_alimtalk_send(
+                    order_id=order_id,
+                    customer_name=customer_name,
+                    customer_phone=customer_phone,
+                    product_name=product_name,
+                    message=message,
+                    status='SUCCESS' if success else 'FAILED',
+                    error_message=None if success else message_response,
+                    message_id=message_id,
+                    response_data=response_data
+                )
+
+                # 결과에 반영
+                results.append({
+                    'order_id': order_id,
+                    'success': success,
+                    'message': message_response
+                })
+
+            except Exception as e:
+                # API 호출 실패 시
+                log_alimtalk_send(
+                    order_id=order_id,
+                    customer_name=customer_name,
+                    customer_phone=customer_phone,
+                    product_name=product_name,
+                    message=message,
+                    status='FAILED',
+                    error_message=str(e),
+                    message_id=None,
+                    response_data={}
+                )
+                results.append({
+                    'order_id': order_id,
+                    'success': False,
+                    'message': str(e)
+                })
+
+        success_count = sum(1 for r in results if r['success'])
+
+        return jsonify({
+            'success': True,
+            'total_count': len(results),
+            'success_count': success_count,
+            'results': results
+        })
+
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 
 # 애플리케이션 팩토리 함수 필수###############################################################
 def create_app():
