@@ -1,5 +1,4 @@
 import pandas as pd
-import requests
 from flask import Flask, Blueprint, request, redirect, url_for, render_template, session, send_file,jsonify
 from flask_login import LoginManager, login_user, login_required, logout_user
 from models import db, User, OrderSave, generate_order_id, Product, Customer,generate_customer_id,generate_finish_id, Finish
@@ -12,7 +11,7 @@ from dateutil import parser
 from io import BytesIO
 from sqlalchemy import text
 from sqlalchemy import func
-import json, psycopg2
+import json, psycopg2, requests
 
 
 # 블루프린트 초기화
@@ -841,7 +840,7 @@ def send_alimtalk():
                 'apikey': 'hjl1ybbuhz8pz79l8wticygxt4i2f2gt',  # 실제 API 키
                 'userid': 'kimyh1964',
                 'senderkey': 'a42677021ccee9340b0619840bbc8907928ac571',
-                'tpl_code': 'xxxxxxxxxxxx',
+                'tpl_code': 'UB_4325',
                 'sender': '01035654807',
                 'receiver_1': customer_phone,
                 'subject_1': '주문 완료 알림',
