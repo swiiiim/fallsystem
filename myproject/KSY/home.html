@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>가을단감농원 시스템</title>
     <style>
         body, html {
@@ -12,13 +12,21 @@
             height: 100%;
             font-family: 'Arial', sans-serif;
             display: flex;
-            justify-content: center;
+            flex-direction: column; /* 세로 배치 */
             align-items: center;
             background: linear-gradient(135deg, #FFA726 0%, #FB8C00 100%);
             overflow: hidden;
         }
 
+        /* IP 주소 표시용 스타일 */
+        #ipDisplay {
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #fff;
+        }
+
         .container {
+            margin-top: 20px;
             background: rgba(255, 255, 255, 0.9);
             padding: 30px;
             border-radius: 10px;
@@ -34,6 +42,7 @@
             margin-bottom: 20px;
         }
 
+        /* 버튼 스타일 유지 */
         .button {
             display: block;
             width: 100%;
@@ -82,14 +91,32 @@
     </style>
 </head>
 <body>
+
+    <!-- IP 주소를 보여주는 영역 -->
+    <div id="ipDisplay">IP 주소 불러오는 중...</div>
+
     <div class="container">
         <h1 class="title">가을단감농원시스템</h1>
-        <h1>환영합니다,{{ user.user_nm }}님!</h1>
+        <h1>환영합니다, {{ user.user_nm }}님!</h1>
         <button class="button" onclick="location.href='/save'">주문</button>
         <button class="buttonD" onclick="location.href='/view'">조회</button>
         <button class="button" onclick="location.href='/excel'">엑셀</button>
         <button class="buttonD" onclick="location.href='/finish'">완료</button>
-
     </div>
+
+    <script>
+        // 페이지 로드 시 IP 주소를 받아오는 함수
+        window.onload = function() {
+            fetch('https://api.ipify.org?format=json')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('ipDisplay').innerText = '현재 IP 주소: ' + data.ip;
+                })
+                .catch(error => {
+                    document.getElementById('ipDisplay').innerText = 'IP 주소를 불러오지 못했습니다.';
+                });
+        }
+    </script>
+
 </body>
 </html>
