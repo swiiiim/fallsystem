@@ -921,6 +921,15 @@ def send_alimtalk():
             'error': str(e)
         }), 500
 
+@main.route('/get_server_ip')
+def get_server_ip():
+    try:
+        response = requests.get('https://api.ipify.org')
+        server_ip = response.text
+    except:
+        server_ip = 'IP 조회 실패'
+    return jsonify({'server_ip': server_ip})
+
 # 애플리케이션 팩토리 함수 필수###############################################################
 def create_app():
     app = Flask(__name__)

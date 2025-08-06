@@ -23,6 +23,7 @@
             margin-top: 20px;
             font-size: 1.2em;
             color: #fff;
+            font-weight: bold;
         }
 
         .container {
@@ -92,8 +93,8 @@
 </head>
 <body>
 
-    <!-- IP 주소를 보여주는 영역 -->
-    <div id="ipDisplay">IP 주소 불러오는 중...</div>
+    <!-- 서버 IP 주소를 보여주는 영역 -->
+    <div id="ipDisplay">서버 IP 주소를 불러오는 중...</div>
 
     <div class="container">
         <h1 class="title">가을단감농원시스템</h1>
@@ -105,17 +106,15 @@
     </div>
 
     <script>
-        // 페이지 로드 시 IP 주소를 받아오는 함수
-        window.onload = function() {
-            fetch('https://api.ipify.org?format=json')
-                .then(response => response.json())
-                .then(data => {
-                    document.getElementById('ipDisplay').innerText = '현재 IP 주소: ' + data.ip;
-                })
-                .catch(error => {
-                    document.getElementById('ipDisplay').innerText = 'IP 주소를 불러오지 못했습니다.';
-                });
-        }
+        // 페이지 로드 시 서버 API로부터 IP 주소 요청
+        fetch('/get_server_ip')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('ipDisplay').innerText = '서버 IP 주소: ' + data.server_ip;
+            })
+            .catch(error => {
+                document.getElementById('ipDisplay').innerText = '서버 IP 주소를 불러오지 못했습니다.';
+            });
     </script>
 
 </body>
