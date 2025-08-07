@@ -1,7 +1,7 @@
 import pandas as pd
 from flask import Flask, Blueprint, request, redirect, url_for, render_template, session, send_file,jsonify
 from flask_login import LoginManager, login_user, login_required, logout_user
-from models import db, User, OrderSave, generate_order_id, Product, Customer,generate_customer_id,generate_finish_id, Finish
+from models import db, User, OrderSave, generate_order_id, Product, Customer,generate_customer_id,generate_finish_id, Finish, AlimtalkLog
 from datetime import datetime,timedelta
 from sqlalchemy.exc import SQLAlchemyError
 import xlsxwriter
@@ -810,21 +810,165 @@ def log_alimtalk_send(order_id, customer_name, customer_phone, product_name, mes
     cursor.close()
     conn.close()
 
+# @main.route('/send-alimtalk', methods=['POST'])
+# def send_alimtalk():
+#     try:
+#         orders = request.json.get('orders', [])
+#         results = []
+#
+#         for order in orders:
+#             customer_phone = order.get('customer_phone', '').replace('-', '').strip()
+#             customer_name = order.get('customer_name', '')
+#             product_name = order.get('product_name', '')
+#             order_id = order.get('order_id')
+#
+#             # 전화번호 검증
+#             if not customer_phone:
+#                 results.append({
+#                     'order_id': order_id,
+#                     'success': False,
+#                     'message': '전화번호 없음'
+#                 })
+#                 # 실패 로그 저장
+#                 log_alimtalk_send(
+#                     order_id=order_id,
+#                     customer_name=customer_name,
+#                     customer_phone=customer_phone,
+#                     product_name=product_name,
+#                     message=None,
+#                     status='FAILED',
+#                     error_message='전화번호 없음',
+#                     message_id=None,
+#                     response_data={}
+#                 )
+#                 continue
+#
+#             # 알림톡 메시지 본문(치환 변수는 그대로)
+#             message = (
+#                 "안녕하세요. 가을단감농원입니다.\n"
+#                 "#{고객명}님, 주문하신 상품이 오늘 발송하여 내일 도착 \"예정\" 입니다. (도서,혼잡지역 제외)\n"
+#                 "\n"
+#                 "- 상품명 : #{상품명}\n"
+#                 "- 택배사 : 우체국 택배\n"
+#                 "\n"
+#                 "주문해주셔서 감사합니다.\n"
+#                 #"채널 추가하고 이 채널의 광고와 마케팅 메시지를 카카오톡으로 받기"
+#             )
+#
+#             # 버튼 정보(채널추가 한 개)
+#             button_info = {
+#                 "button": [
+#                     {
+#                         "name": "채널추가",
+#                         "linkType": "BK",
+#                         "linkTypeName": "채널추가",
+#                         "linkMobile": "",
+#                         "linkPc": ""
+#                     }
+#                 ]
+#             }
+#
+#             api_url = 'https://kakaoapi.aligo.in/akv10/alimtalk/send/'
+#             sms_data = {
+#                 'apikey': 'hjl1ybbuhz8pz79l8wticygxt4i2f2gt',           # 실제 알리고 API KEY로 교체
+#                 'userid': 'kimyh1964',
+#                 'senderkey': 'a42677021ccee9340b0619840bbc8907928ac571',  # 실제 발신 프로필 키
+#                 'tpl_code': 'UB_4325',                                    # 실제 템플릿 코드로 교체
+#                 'sender': '01035654807',
+#                 'receiver_1': customer_phone,
+#                 'subject_1': '',                                          # 필요시 입력
+#                 'message_1': message,
+#                 'button_1': json.dumps(button_info),
+#                 'emphasize_type_1': 'BASE',                               # 기본강조형: BASE (필수)
+#                 'emphasize_subtitle_1': '가을단감농원',                   # 서브타이틀
+#                 'emphasize_title_1': '배송 시작',                          # 타이틀
+#                 # 치환 변수값(등록 순서에 맞게 넣기) - 알리고 기준
+#                 'msg_variable_1': customer_name,
+#                 'msg_variable_2': product_name
+#             }
+#
+#             try:
+#                 response = requests.post(api_url, data=sms_data)
+#                 response_data = response.json()
+#                 success = response_data.get('code') == '0'
+#                 message_response = response_data.get('message', '')
+#                 message_id = response_data.get('messageId')
+#
+#                 # 발송 결과 로그 남김
+#                 log_alimtalk_send(
+#                     order_id=order_id,
+#                     customer_name=customer_name,
+#                     customer_phone=customer_phone,
+#                     product_name=product_name,
+#                     message=message,
+#                     status='SUCCESS' if success else 'FAILED',
+#                     error_message=None if success else message_response,
+#                     message_id=message_id,
+#                     response_data=response_data
+#                 )
+#
+#                 results.append({
+#                     'order_id': order_id,
+#                     'success': success,
+#                     'message': message_response
+#                 })
+#
+#             except Exception as e:
+#                 # 예외발생시 로그 저장
+#                 log_alimtalk_send(
+#                     order_id=order_id,
+#                     customer_name=customer_name,
+#                     customer_phone=customer_phone,
+#                     product_name=product_name,
+#                     message=message,
+#                     status='FAILED',
+#                     error_message=str(e),
+#                     message_id=None,
+#                     response_data={}
+#                 )
+#                 results.append({
+#                     'order_id': order_id,
+#                     'success': False,
+#                     'message': str(e)
+#                 })
+#
+#         success_count = sum(1 for r in results if r['success'])
+#         return jsonify({
+#             'success': True,
+#             'total_count': len(results),
+#             'success_count': success_count,
+#             'results': results
+#         })
+#
+#     except Exception as e:
+#         return jsonify({
+#             'success': False,
+#             'error': str(e)
+#         }), 500
+
+
 @main.route('/send-alimtalk', methods=['POST'])
 def send_alimtalk():
     try:
         orders = request.json.get('orders', [])
         results = []
 
+        # 아래 3가지는 템플릿 정보에 맞게 세팅(실제 조회된 값으로)
+        TPL_CODE = 'UB_4325'  # ex: 'P000004' 처럼 응답에서 받은 값
+        SENDER_KEY = 'a42677021ccee9340b0619840bbc8907928ac571'  # 템플릿과 일치해야 함
+        EMPHASIZE_TYPE = 'TEXT'  # 강조유형(기본강조형이면 'TEXT', 기본형이면 'NONE')
+        EMPHASIZE_TITLE = '배송 시작'  # 템플릿 리스트에서 확인
+        EMPHASIZE_SUBTITLE = '가을단감농원'  # 템플릿 리스트에서 확인
+
         for order in orders:
             customer_phone = order.get('customer_phone', '').replace('-', '').strip()
             customer_name = order.get('customer_name', '')
             product_name = order.get('product_name', '')
-            product_quantity = order.get('product_quantity', '')
             order_id = order.get('order_id')
 
-            # 전화번호 검증
             if not customer_phone:
+                log_alimtalk_send(order_id, customer_name, customer_phone, product_name, None, 'FAILED', '전화번호 없음',
+                                  None, {})
                 results.append({
                     'order_id': order_id,
                     'success': False,
@@ -832,55 +976,71 @@ def send_alimtalk():
                 })
                 continue
 
-            # 메시지 구성
-            message = f"{customer_name}님, {product_name} {product_quantity}개 주문이 완료되었습니다."
+            # 본문 내용(실제 templtContent와 일치 시켜야 함. 줄바꿈, 공백, 치환변수 모두!)
+            message = (
+                "안녕하세요. 가을단감농원입니다.\n"
+                # "#{고객명}님, 주문하신 상품이 오늘 발송하여 내일 도착 \"예정\" 입니다. (도서,혼잡지역 제외)\n"
+                # "\n"
+                # "- 상품명 : #{상품명}\n"
+                f"{customer_name}님, 주문하신 상품이 오늘 발송하여 내일 도착 \"예정\" 입니다. (도서,혼잡지역 제외)\n"
+                "\n"
+                f"- 상품명 : {product_name}\n"                
+                "- 택배사 : 우체국 택배\n"
+                "\n"
+                "주문해주셔서 감사합니다.\n"
+            )
 
-            # API 요청 데이터
+            # 버튼은 templtList 응답의 buttons 필드 기반!
+            button_info = {
+                "button": [
+                    {
+                        "name": "채널추가",
+                        "linkType": "AC",
+                        "linkTypeName": "",
+                        "linkMobile": "",
+                        "linkPc": ""
+                    }
+                ]
+            }
+
             sms_data = {
-                'apikey': 'hjl1ybbuhz8pz79l8wticygxt4i2f2gt',  # 실제 API 키
+                'apikey': 'hjl1ybbuhz8pz79l8wticygxt4i2f2gt',
                 'userid': 'kimyh1964',
-                'senderkey': 'a42677021ccee9340b0619840bbc8907928ac571',
-                'tpl_code': 'UB_4325',
+                'senderkey': SENDER_KEY,
+                'tpl_code': TPL_CODE,
                 'sender': '01035654807',
                 'receiver_1': customer_phone,
-                'subject_1': '주문 완료 알림',
+                'subject_1': '',
                 'message_1': message,
+                'button_1': json.dumps(button_info),
+                # 강조 필드
+                #'emtitle_1' : '배송 시작',
+                'emphasize_type_1': EMPHASIZE_TYPE,
+                #'emphasize_title_1': EMPHASIZE_TITLE,
+                'emtitle_1': EMPHASIZE_TITLE,
+                'emphasize_subtitle_1': EMPHASIZE_SUBTITLE,
+                # 치환 변수값 순서대로(템플릿에 따라 맞춰야 함)
+                'msg_variable_1': customer_name,
+                'msg_variable_2': product_name,
             }
-
-            # 버튼 정보 (필요 시)
-            button_info = {
-                'button': [{
-                    'name': '주문확인',
-                    'linkType': 'WL',
-                    'linkTypeName': '웹링크',
-                    'linkMobile': 'https://example.com/order',
-                    'linkPc': 'https://example.com/order'
-                }]
-            }
-            sms_data['button_1'] = json.dumps(button_info)
 
             try:
-                response = requests.post('https://kakaoapi.aligo.in/akv10/alimtalk/send/', data=sms_data)
+                response = requests.post(
+                    'https://kakaoapi.aligo.in/akv10/alimtalk/send/',
+                    data=sms_data
+                )
                 response_data = response.json()
-
                 success = response_data.get('code') == '0'
                 message_response = response_data.get('message', '')
-                message_id = response_data.get('messageId')  # 반환되는 메시지 ID, 없으면 None
+                message_id = response_data.get('messageId')
 
-                # 성공/실패 로그 DB 저장
                 log_alimtalk_send(
-                    order_id=order_id,
-                    customer_name=customer_name,
-                    customer_phone=customer_phone,
-                    product_name=product_name,
-                    message=message,
-                    status='SUCCESS' if success else 'FAILED',
-                    error_message=None if success else message_response,
-                    message_id=message_id,
-                    response_data=response_data
+                    order_id, customer_name, customer_phone, product_name,
+                    message, 'SUCCESS' if success else 'FAILED',
+                    None if success else message_response,
+                    message_id, response_data
                 )
 
-                # 결과에 반영
                 results.append({
                     'order_id': order_id,
                     'success': success,
@@ -888,17 +1048,9 @@ def send_alimtalk():
                 })
 
             except Exception as e:
-                # API 호출 실패 시
                 log_alimtalk_send(
-                    order_id=order_id,
-                    customer_name=customer_name,
-                    customer_phone=customer_phone,
-                    product_name=product_name,
-                    message=message,
-                    status='FAILED',
-                    error_message=str(e),
-                    message_id=None,
-                    response_data={}
+                    order_id, customer_name, customer_phone, product_name,
+                    message, 'FAILED', str(e), None, {}
                 )
                 results.append({
                     'order_id': order_id,
@@ -906,20 +1058,14 @@ def send_alimtalk():
                     'message': str(e)
                 })
 
-        success_count = sum(1 for r in results if r['success'])
-
         return jsonify({
             'success': True,
             'total_count': len(results),
-            'success_count': success_count,
+            'success_count': sum(1 for r in results if r['success']),
             'results': results
         })
-
     except Exception as e:
-        return jsonify({
-            'success': False,
-            'error': str(e)
-        }), 500
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @main.route('/get_server_ip')
 def get_server_ip():
@@ -929,6 +1075,32 @@ def get_server_ip():
     except:
         server_ip = 'IP 조회 실패'
     return jsonify({'server_ip': server_ip})
+
+@main.route('/alimtalk-logs', methods=['GET'])
+def fetch_alimtalk_logs():
+    """알림톡 발송 로그 전체 조회 API"""
+    try:
+        # 로그 데이터 조회 (원하는 정렬방식으로 정렬, 예: 최신순)
+        logs = db.session.query(AlimtalkLog).order_by(AlimtalkLog.log_id.desc()).all()
+
+        # 직렬화
+        log_list = [
+            {
+                "log_id": row.log_id,
+                "order_id": row.order_id,
+                "customer_name": row.customer_name,
+                "customer_phone": row.customer_phone,
+                "product_name": row.product_name,
+                "sent_at": row.sent_at.strftime('%Y-%m-%d %H:%M:%S'),
+                "error_message": row.error_message or ""
+            }
+            for row in logs
+        ]
+        return jsonify(log_list)  # JS에서 바로 사용할 수 있게 배열로만 반환
+
+    except Exception as e:
+        print(f"Error during fetching alimtalk log data: {e}")
+        return jsonify([]), 500  # JS는 에러 시 빈 리스트 처리
 
 # 애플리케이션 팩토리 함수 필수###############################################################
 def create_app():

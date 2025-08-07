@@ -94,7 +94,17 @@
 <body>
 
     <!-- 서버 IP 주소를 보여주는 영역 -->
-    <div id="ipDisplay">서버 IP 주소를 불러오는 중...</div>
+    <div style="display: flex; align-items: center; gap:8px;">
+        <div id="ipDisplay">서버 IP 주소를 불러오는 중...</div>
+        <!-- 카카오톡 아이콘을 클릭하면 /log로 이동 -->
+        <a href="/popcustomer" title="알림톡 로그 이동" style="display:inline-block;">
+            <svg width="28" height="28" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg"
+             style="vertical-align:middle; cursor:pointer;">
+                <circle cx="18" cy="18" r="18" fill="#FEE500"/>
+                <path d="M18 9c-5.523 0-10 3.357-10 7.5 0 2.708 2.318 5.034 5.805 6.349l-1.045 3.843a1 1 0 0 0 1.593 1.05l4.006-2.736c.212.016.428.024.641.024 5.523 0 10-3.357 10-7.5S23.523 9 18 9z" fill="#000"/>
+            </svg>
+        </a>
+    </div>
 
     <div class="container">
         <h1 class="title">가을단감농원시스템</h1>

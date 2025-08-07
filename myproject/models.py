@@ -142,3 +142,16 @@ class Finish(db.Model):
 
 def __repr__(self):
     return f'<Order {self.finish_id}>'
+
+class AlimtalkLog(db.Model):
+    __tablename__ = 'alimtalk_logs'
+    log_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    order_id = db.Column(db.String(50))
+    customer_name = db.Column(db.String(100))
+    customer_phone = db.Column(db.String(20))
+    product_name = db.Column(db.String(255))
+    sent_at = db.Column(db.DateTime, nullable=False, default=db.func.current_timestamp())  # 보낸일자
+    error_message = db.Column(db.String(500), nullable=True)
+
+    def __repr__(self):
+        return f'<AlimtalkLog {self.log_id}>'
