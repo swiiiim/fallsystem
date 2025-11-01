@@ -378,6 +378,9 @@
           width: 400px;
           position: relative;
           border-radius: 8px;
+          max-height: 80vh; /* 화면 높이의 80%로 최대 높이 제한 */
+          overflow-y: auto; /* 세로 스크롤 활성화 */
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* 모달에 시각적인 깊이를 추가 */
         }
 
         /* 닫기 버튼 */
@@ -405,6 +408,19 @@
           .no-print {
             display: none !important;
           }
+        /* 인쇄 버튼 고정 개선 */
+        .modal-content .no-print {
+          margin-top: 15px;
+          text-align: center;
+        }
+
+        /* 버튼 위치가 고정된 경우 (선택적으로 적용 가능) */
+        .modal-content .no-print {
+          position: sticky; /* 요소를 항상 보이게 설정 */
+          bottom: 0;        /* 스크롤 시 하단에 고정 */
+          background-color: #fff; /* 배경색 추가 */
+          z-index: 100;     /* 높은 우선순위로 표시 */
+        }
     </style>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
